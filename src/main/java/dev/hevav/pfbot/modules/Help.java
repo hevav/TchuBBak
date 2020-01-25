@@ -1,18 +1,19 @@
-package dev.hevav.pfbot.Modules;
+package dev.hevav.pfbot.modules;
 
 import dev.hevav.pfbot.Boot;
-import dev.hevav.pfbot.API.LocalizedString;
-import dev.hevav.pfbot.API.Module;
-import dev.hevav.pfbot.API.Trigger;
+import dev.hevav.pfbot.api.EmbedHelper;
+import dev.hevav.pfbot.api.LocalizedString;
+import dev.hevav.pfbot.api.Module;
+import dev.hevav.pfbot.api.Trigger;
+import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
-
-import static dev.hevav.pfbot.API.EmbedHelper.sendEmbed;
 
 /**
  * Help command module
@@ -21,13 +22,6 @@ import static dev.hevav.pfbot.API.EmbedHelper.sendEmbed;
  * @since 1.0
  */
 public class Help implements Module {
-    @Override
-    public Trigger[] triggers() {
-        return new Trigger[]{new Trigger("help", helpDescription), new Trigger("h", helpDescription)};
-    }
-
-    ;
-
     private final Logger logger = LogManager.getLogger("PFbot");
     private Boot boot;
     private LocalizedString helpDescription = new LocalizedString(
@@ -38,32 +32,35 @@ public class Help implements Module {
             null,
             null);
 
-    public Help(Boot _boot) {
-        boot = _boot;
+    public Trigger[] triggers() {
+        return new Trigger[]{new Trigger("help", helpDescription), new Trigger("h", helpDescription)};
     }
-
-    @Override
+    public void onInit(WeakReference<Boot> _boot){
+        boot = _boot.get();
+        boot.api.getPresence().setActivity(Activity.listening(String.format("%shelp", boot.bot_prefix)));
+        logger.debug("Module Help was initialized");
+    }
     public void onMessage(GuildMessageReceivedEvent event, String trigger) {
         switch (trigger) {
             case "help":
             case "h":
-                List<List<MessageEmbed.Field>> fields = new ArrayList<>();
+                List<List<MessageEmbed.Field>> modules = new ArrayList<>();
                 int fieldCount = 0;
                 int fieldListCount = 0;
-                fields.add(new ArrayList<>());
+                modules.add(new ArrayList<>());
                 for (Module module : boot.modules) {
                     for (Trigger trigger1 : module.triggers()) {
                         fieldCount++;
-                        fields.get(fieldListCount).add(new MessageEmbed.Field(boot.bot_prefix + trigger1.trigger, LocalizedString.getLocalizedString(trigger1.description, event.getGuild().getRegion()), true));
+                        modules.get(fieldListCount).add(new MessageEmbed.Field(boot.bot_prefix + trigger1.trigger, trigger1.description.getLocalizedString(event.getGuild().getRegion()), true));
                         if(fieldCount == 25){
                             fieldCount = 0;
                             fieldListCount++;
-                            fields.add(new ArrayList<>());
+                            modules.add(new ArrayList<>());
                         }
                     }
                 }
-                for(List<MessageEmbed.Field> field : fields)
-                    sendEmbed(LocalizedString.getLocalizedString(helpDescription, event.getGuild().getRegion()), "", event.getChannel(), field);
+                for(List<MessageEmbed.Field> field : modules)
+                    EmbedHelper.sendEmbed(helpDescription.getLocalizedString(event.getGuild().getRegion()), "", event.getChannel(), field);
                 break;
         }
     }

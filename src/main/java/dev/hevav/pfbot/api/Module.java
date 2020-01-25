@@ -1,6 +1,9 @@
-package dev.hevav.pfbot.API;
+package dev.hevav.pfbot.api;
 
+import dev.hevav.pfbot.Boot;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+
+import java.lang.ref.WeakReference;
 
 /**
  * Interface to create modules
@@ -23,4 +26,9 @@ public interface Module {
      * @param trigger trigger with excluded prefix
      */
     void onMessage(GuildMessageReceivedEvent event, String trigger);
+
+    /**
+     * Initialize module after API was created
+     */
+    void onInit(WeakReference<Boot> _boot);
 }

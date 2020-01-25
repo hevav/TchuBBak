@@ -1,6 +1,5 @@
-package dev.hevav.pfbot.API;
+package dev.hevav.pfbot.api;
 
-import dev.hevav.pfbot.Modules.Music;
 import net.dv8tion.jda.api.entities.EmbedType;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -26,22 +25,29 @@ public class EmbedHelper {
             null,
             null,
             null);
+    private static LocalizedString queuePosString = new LocalizedString(
+            "Очередь",
+            "Queue",
+            null,
+            null,
+            null,
+            null);
 
     public static void sendEmbed(String title, String msg, TextChannel textChannel) {
-        textChannel.sendMessage(new MessageEmbed(null, title, msg, EmbedType.UNKNOWN, null, 16711680, null, null, new MessageEmbed.AuthorInfo("PFbot", null, "https://cdn.discordapp.com/avatars/538670331938865163/bc903e523601f6535ea6f6909e51ff5c.png", null), null, null, null, null)).complete();
+        textChannel.sendMessage(new MessageEmbed(null, title, msg, EmbedType.UNKNOWN, null, 16711680, null, null, new MessageEmbed.AuthorInfo("PFbot", null, "https://cdn.discordapp.com/avatars/538670331938865163/bc903e523601f6535ea6f6909e51ff5c.png", null), null, new MessageEmbed.Footer("PFbot by hevav and OSS community", "https://cdn.discordapp.com/avatars/538670331938865163/bc903e523601f6535ea6f6909e51ff5c.png", null), null, null)).complete();
     }
 
     public static void sendEmbed(String title, String msg, TextChannel textChannel, List<MessageEmbed.Field> fields) {
-        textChannel.sendMessage(new MessageEmbed(null, title, msg, EmbedType.UNKNOWN, null, 16711680, null, null, new MessageEmbed.AuthorInfo("PFbot", null, "https://cdn.discordapp.com/avatars/538670331938865163/bc903e523601f6535ea6f6909e51ff5c.png", null), null, null, null, fields)).complete();
+        textChannel.sendMessage(new MessageEmbed(null, title, msg, EmbedType.UNKNOWN, null, 16711680, null, null, new MessageEmbed.AuthorInfo("PFbot", null, "https://cdn.discordapp.com/avatars/538670331938865163/bc903e523601f6535ea6f6909e51ff5c.png", null), null, new MessageEmbed.Footer("PFbot by hevav and OSS community", "https://cdn.discordapp.com/avatars/538670331938865163/bc903e523601f6535ea6f6909e51ff5c.png", null), null, fields)).complete();
     }
-    public static void sendEmbed(String trackName, long length, String trackUrl, String author, PlayType type, TextChannel textChannel) {
+    public static void sendEmbed(String trackName, String queuePos, long length, String trackUrl, String author, PlayType type, TextChannel textChannel) {
         String stringLength = LocalTime.MIN.plus(
-                Duration.ofMinutes( length )
+                Duration.ofSeconds( length )
         ).toString();
         Message msg = textChannel.sendMessage(new MessageEmbed(
                 trackUrl,
                 trackName,
-                LocalizedString.getLocalizedString(DJDescription, textChannel.getGuild().getRegion()),
+                DJDescription.getLocalizedString(textChannel.getGuild().getRegion()),
                 EmbedType.UNKNOWN,
                 null,
                 typeToColor(type),
@@ -49,11 +55,13 @@ public class EmbedHelper {
                 null,
                 new MessageEmbed.AuthorInfo(author, null, null, null),
                 null,
-                new MessageEmbed.Footer("PFbot", "https://cdn.discordapp.com/avatars/538670331938865163/bc903e523601f6535ea6f6909e51ff5c.png", null),
+                new MessageEmbed.Footer("PFbot by hevav and OSS community", "https://cdn.discordapp.com/avatars/538670331938865163/bc903e523601f6535ea6f6909e51ff5c.png", null),
                 null,
-                Arrays.asList(new MessageEmbed.Field[]{
-                        new MessageEmbed.Field(LocalizedString.getLocalizedString(trackLengthString, textChannel.getGuild().getRegion()), stringLength,true)
-                }))).complete();
+                Arrays.asList(
+                        new MessageEmbed.Field(trackLengthString.getLocalizedString(textChannel.getGuild().getRegion()), stringLength,true),
+                        new MessageEmbed.Field(queuePosString.getLocalizedString(textChannel.getGuild().getRegion()), queuePos, true))
+                )
+        ).complete();
         msg.addReaction("⏯").complete(); //play pause
         msg.addReaction("⏭").complete(); //skip
         msg.addReaction("\uD83D\uDD07").complete(); //mute
@@ -73,7 +81,7 @@ public class EmbedHelper {
         return 0;
     }
 
-    public static enum PlayType {
+    public enum PlayType {
         Playing,
         Added,
         Streaming,

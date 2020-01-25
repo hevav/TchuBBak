@@ -1,4 +1,4 @@
-package dev.hevav.pfbot.API;
+package dev.hevav.pfbot.api;
 
 /**
  * Class to represent triggers for loading modules

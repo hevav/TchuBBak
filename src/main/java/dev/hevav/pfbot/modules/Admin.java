@@ -1,8 +1,10 @@
-package dev.hevav.pfbot.Modules;
+package dev.hevav.pfbot.modules;
 
-import dev.hevav.pfbot.API.LocalizedString;
-import dev.hevav.pfbot.API.Module;
-import dev.hevav.pfbot.API.Trigger;
+import dev.hevav.pfbot.Boot;
+import dev.hevav.pfbot.api.EmbedHelper;
+import dev.hevav.pfbot.api.LocalizedString;
+import dev.hevav.pfbot.api.Module;
+import dev.hevav.pfbot.api.Trigger;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.Region;
 import net.dv8tion.jda.api.entities.MessageChannel;
@@ -10,7 +12,7 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static dev.hevav.pfbot.API.EmbedHelper.sendEmbed;
+import java.lang.ref.WeakReference;
 
 /**
  * Admin features bot
@@ -22,7 +24,7 @@ public class Admin implements Module {
     @Override
     public Trigger[] triggers(){
         return new Trigger[]{new Trigger("purge", "purge <int>", purgeDescription)};
-    };
+    }
 
     private LocalizedString noPermissions = new LocalizedString(
             "No permissions",
@@ -56,6 +58,11 @@ public class Admin implements Module {
     );
 
     private final Logger logger = LogManager.getLogger("PFbot");
+
+    public void onInit(WeakReference<Boot> _boot) {
+        logger.debug("Module Admin was initialized");
+    }
+
     @Override
     public void onMessage(GuildMessageReceivedEvent event, String trigger){
         String[] msg_split = event.getMessage().getContentRaw().split(" ");
@@ -63,8 +70,8 @@ public class Admin implements Module {
         switch (trigger){
             case "purge":
                 if (!event.getMember().hasPermission(Permission.MESSAGE_MANAGE)){
-                    sendEmbed(LocalizedString.getLocalizedString(noPermissions, region),
-                            LocalizedString.getLocalizedString(noPermissionsFull, region),
+                    EmbedHelper.sendEmbed(noPermissions.getLocalizedString(region),
+                            noPermissionsFull.getLocalizedString(region),
                             event.getChannel());
                     return;
                 }
@@ -82,7 +89,7 @@ public class Admin implements Module {
                 }
                 catch (Exception e){
                     logger.debug("Admin exception",e);
-                    sendEmbed(LocalizedString.getLocalizedString(errorPurgeDescription, region),
+                    EmbedHelper.sendEmbed(errorPurgeDescription.getLocalizedString(region),
                             e.toString(),
                             event.getChannel());
                 }

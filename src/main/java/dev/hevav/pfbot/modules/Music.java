@@ -1,4 +1,4 @@
-package dev.hevav.pfbot.Modules;
+package dev.hevav.pfbot.modules;
 
 import com.sedmelluq.discord.lavaplayer.demo.jda.GuildMusicManager;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
@@ -9,13 +9,14 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
-import dev.hevav.pfbot.API.EmbedHelper;
-import dev.hevav.pfbot.API.LocalizedString;
-import dev.hevav.pfbot.API.Module;
-import dev.hevav.pfbot.API.Trigger;
+import dev.hevav.pfbot.api.EmbedHelper;
+import dev.hevav.pfbot.api.LocalizedString;
+import dev.hevav.pfbot.api.Module;
+import dev.hevav.pfbot.api.Trigger;
 import dev.hevav.pfbot.Boot;
 import net.dv8tion.jda.api.Region;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -27,10 +28,10 @@ import org.json.JSONTokener;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.*;
-
-import static dev.hevav.pfbot.API.EmbedHelper.sendEmbed;
 
 /**
  * Music module
@@ -41,23 +42,12 @@ import static dev.hevav.pfbot.API.EmbedHelper.sendEmbed;
  */
 public class Music implements Module {
 
-    public Music(Boot boot) {
-        this.musicManagers = new HashMap<>();
-        this.playerManager = new DefaultAudioPlayerManager();
-        AudioSourceManagers.registerRemoteSources(playerManager);
-        AudioSourceManagers.registerLocalSource(playerManager);
-        yt_token = boot.yt_token;
-        boot.api.addEventListener(new EmojiProceed());
-    }
-
-    @Override
     public Trigger[] triggers() {
         return new Trigger[]{
                 new Trigger("stop", stopDescription),
                 new Trigger("play", "play <track>", playDescription),
                 new Trigger("p", "p <track>", playDescription),
                 new Trigger("volume", "volume <int>", volumeDescription),
-                new Trigger("v", "v <int>", volumeDescription),
                 new Trigger("v", "v <int>", volumeDescription),
                 new Trigger("skip", skipDescription),
                 new Trigger("pause", pauseDescription),
@@ -67,7 +57,7 @@ public class Music implements Module {
     private final Logger logger = LogManager.getLogger("PFbot");
     private final AudioPlayerManager playerManager;
     private final Map<Long, GuildMusicManager> musicManagers;
-    private final String yt_token;
+    private String yt_token;
 
     private LocalizedString playDescription = new LocalizedString(
             "Сыграть <track> или добавить очередь",
@@ -126,6 +116,20 @@ public class Music implements Module {
             null,
             null);
 
+    public Music() {
+        this.musicManagers = new HashMap<>();
+        this.playerManager = new DefaultAudioPlayerManager();
+        AudioSourceManagers.registerRemoteSources(playerManager);
+        AudioSourceManagers.registerLocalSource(playerManager);
+    }
+
+    public void onInit(WeakReference<Boot> _boot){
+        Boot boot = _boot.get();
+        yt_token = boot.yt_token;
+        boot.api.addEventListener(new MusicListener());
+        logger.debug("Module Music was initialized");
+    }
+
     private synchronized GuildMusicManager getGuildAudioPlayer(Guild guild) {
         long guildId = Long.parseLong(guild.getId());
         GuildMusicManager musicManager = musicManagers.get(guildId);
@@ -163,7 +167,7 @@ public class Music implements Module {
         playerManager.loadItemOrdered(musicManager, trackUrl, new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack track) {
-                sendEmbed(track.getInfo().title, track.getDuration(), trackUrl, track.getInfo().author, EmbedHelper.PlayType.Added, channel);
+                EmbedHelper.sendEmbed(track.getInfo().title, "+1" ,track.getDuration(), trackUrl, track.getInfo().author, EmbedHelper.PlayType.Added, channel);
 
                 play(channel.getGuild(), musicManager, track, voiceChannel);
             }
@@ -175,8 +179,8 @@ public class Music implements Module {
                 if (firstTrack == null) {
                     firstTrack = playlist.getTracks().get(0);
                 }
-                sendEmbed(playlist.getName(), 0, trackUrl, "Playlist", EmbedHelper.PlayType.Playlist, channel);
-                sendEmbed(firstTrack.getInfo().title, firstTrack.getDuration(), firstTrack.getInfo().uri, firstTrack.getInfo().author, EmbedHelper.PlayType.Added, channel);
+                EmbedHelper.sendEmbed(playlist.getName(), "+"+playlist.getTracks().size() , 0, trackUrl, "Playlist", EmbedHelper.PlayType.Playlist, channel);
+                EmbedHelper.sendEmbed(firstTrack.getInfo().title, "N/A", firstTrack.getDuration(), firstTrack.getInfo().uri, firstTrack.getInfo().author, EmbedHelper.PlayType.Added, channel);
 
                 for(AudioTrack track : playlist.getTracks())
                     play(channel.getGuild(), musicManager, track, voiceChannel);
@@ -184,12 +188,12 @@ public class Music implements Module {
 
             @Override
             public void noMatches() {
-                sendEmbed("404",LocalizedString.getLocalizedString(error404Description, channel.getGuild().getRegion()) + trackUrl, channel);
+                EmbedHelper.sendEmbed("404",error404Description.getLocalizedString(channel.getGuild().getRegion()) + trackUrl, channel);
             }
 
             @Override
             public void loadFailed(FriendlyException exception) {
-                sendEmbed(LocalizedString.getLocalizedString(errorMusicDescription, channel.getGuild().getRegion()),
+                EmbedHelper.sendEmbed(errorMusicDescription.getLocalizedString(channel.getGuild().getRegion()),
                         exception.toString(),
                         channel);
             }
@@ -232,27 +236,33 @@ public class Music implements Module {
     }
 
     private void youtubeSearch(String search, TextChannel channel, VoiceChannel voiceChannel){
-        String url = "https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=" + search.replace(" ","+") + "&key=" + yt_token;
+        String url = String.format("https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=%s&key=%s", search.replace(" ", "+"), yt_token);
         try {
             Document doc = Jsoup.connect(url).ignoreContentType(true).timeout(10 * 1000).get();
             String getJson = doc.text();
             String jsonObject = (String) ((HashMap) ((HashMap) ((JSONObject) new JSONTokener(getJson).nextValue()).getJSONArray("items").toList().get(0)).get("id")).get("videoId");
-            loadAndPlay(channel, "https://youtube.com/watch?v="+jsonObject, voiceChannel);
+            loadAndPlay(channel, String.format("https://youtube.com/watch?v=%s", jsonObject), voiceChannel);
         } catch (IOException e) {
             logger.debug(e);
-            sendEmbed(LocalizedString.getLocalizedString(errorMusicDescription, channel.getGuild().getRegion()),
+            EmbedHelper.sendEmbed(errorMusicDescription.getLocalizedString(channel.getGuild().getRegion()),
                     e.toString().replace(yt_token, "YT_TOKEN"),
+                    channel);
+        }
+        catch (IndexOutOfBoundsException e){
+            logger.debug(e);
+            EmbedHelper.sendEmbed(errorMusicDescription.getLocalizedString(channel.getGuild().getRegion()),
+                    String.format("%s %s", error404Description.getLocalizedString(channel.getGuild().getRegion()), search),
                     channel);
         }
     }
 
-    @Override
     public void onMessage(GuildMessageReceivedEvent event, String trigger) {
         String[] msg_split = event.getMessage().getContentRaw().split(" ");
         Region region = event.getGuild().getRegion();
         boolean notHasDJ = true;
         for (Role role : event.getMember().getRoles()){
-            if (role.getName().toLowerCase() == "dj") {
+            logger.trace(role.getName());
+            if (role.getName().toLowerCase().contains("dj")) {
                 notHasDJ = false;
                 break;
             }
@@ -261,7 +271,7 @@ public class Music implements Module {
             case "play":
             case "p":
                 if (msg_split.length == 0) {
-                    sendEmbed(LocalizedString.getLocalizedString(errorMusicDescription, region),
+                    EmbedHelper.sendEmbed(errorMusicDescription.getLocalizedString(region),
                             "Link to video is wrong",
                             event.getChannel());
                     return;
@@ -278,35 +288,35 @@ public class Music implements Module {
             case "volume":
             case "v":
                 if(notHasDJ){
-                    sendEmbed(LocalizedString.getLocalizedString(errorMusicDescription, region), LocalizedString.getLocalizedString(DJDescription, region), event.getChannel());
+                    EmbedHelper.sendEmbed(errorMusicDescription.getLocalizedString(region), DJDescription.getLocalizedString(region), event.getChannel());
                     return;
                 }
                 try {
                     setVolume(event.getChannel(), Integer.parseInt(msg_split[1]));
                 } catch (Exception e) {
                     logger.debug(e);
-                    sendEmbed(LocalizedString.getLocalizedString(errorMusicDescription, region),
+                    EmbedHelper.sendEmbed(errorMusicDescription.getLocalizedString(region),
                             e.toString(),
                             event.getChannel());
                 }
                 break;
             case "skip":
                 if(notHasDJ){
-                    sendEmbed(LocalizedString.getLocalizedString(errorMusicDescription, region), LocalizedString.getLocalizedString(DJDescription, region), event.getChannel());
+                    EmbedHelper.sendEmbed(errorMusicDescription.getLocalizedString(region), DJDescription.getLocalizedString(region), event.getChannel());
                     return;
                 }
                 skipTrack(event.getChannel());
                 break;
             case "stop":
                 if(notHasDJ){
-                    sendEmbed(LocalizedString.getLocalizedString(errorMusicDescription, region), LocalizedString.getLocalizedString(DJDescription, region), event.getChannel());
+                    EmbedHelper.sendEmbed(errorMusicDescription.getLocalizedString(region), DJDescription.getLocalizedString(region), event.getChannel());
                     return;
                 }
                 stop(event.getChannel());
                 break;
             case "pause":
                 if(notHasDJ){
-                    sendEmbed(LocalizedString.getLocalizedString(errorMusicDescription, region), LocalizedString.getLocalizedString(DJDescription, region), event.getChannel());
+                    EmbedHelper.sendEmbed(errorMusicDescription.getLocalizedString(region), DJDescription.getLocalizedString(region), event.getChannel());
                     return;
                 }
                 pause(event.getChannel());
@@ -314,12 +324,13 @@ public class Music implements Module {
         }
     }
 
-    private class EmojiProceed extends ListenerAdapter{
+    private class MusicListener extends ListenerAdapter{
         @Override
         public void onMessageReactionAdd(MessageReactionAddEvent event){
             boolean notHasDJ = true;
             for (Role role : event.getMember().getRoles()){
-                if (role.getName().toLowerCase() == "dj") {
+                logger.trace(role.getName());
+                if (role.getName().toLowerCase().contains("dj")) {
                     notHasDJ = false;
                     break;
                 }
@@ -346,6 +357,12 @@ public class Music implements Module {
                     break;
             }
             event.getReaction().removeReaction(event.getUser()).complete();
+        }
+
+        @Override
+        public void onGuildVoiceLeave(GuildVoiceLeaveEvent event) {
+            if(event.getMember().getUser().getId().equals(event.getJDA().getSelfUser().getId()))
+                removeGuildAudioPlayer(event.getGuild());
         }
     }
 }

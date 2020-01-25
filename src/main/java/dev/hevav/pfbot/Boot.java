@@ -1,16 +1,18 @@
 package dev.hevav.pfbot;
 
-import dev.hevav.pfbot.API.Module;
-import dev.hevav.pfbot.Listener;
-import dev.hevav.pfbot.Modules.Admin;
-import dev.hevav.pfbot.Modules.Help;
-import dev.hevav.pfbot.Modules.Music;
+import dev.hevav.pfbot.api.Module;
+import dev.hevav.pfbot.modules.Admin;
+import dev.hevav.pfbot.modules.Help;
+import dev.hevav.pfbot.modules.Music;
+import dev.hevav.pfbot.modules.Status;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
+
+import java.lang.ref.WeakReference;
 
 /**
  * Configuration for PFbot
@@ -19,8 +21,15 @@ import org.apache.logging.log4j.core.config.Configurator;
  * @since 1.0
  */
 public class Boot {
+
+   private  WeakReference<Boot> _boot = new WeakReference<>(this);
     //Modules to load
-    public Module[] modules;
+    public Module[] modules = new Module[]{
+            new Admin(),
+            new Music(),
+            new Help(),
+            new Status()
+    };
 
     //YouTube v3 api token
     public String yt_token;
@@ -66,7 +75,7 @@ public class Boot {
             case "ERROR":
                 Configurator.setLevel("PFbot", Level.ERROR);
                 break;
-            default:
+            case "WARN":
                 Configurator.setLevel("PFbot", Level.WARN);
                 break;
             case "DEBUG":
@@ -75,7 +84,7 @@ public class Boot {
             case "TRACE":
                 Configurator.setLevel("PFbot", Level.TRACE);
                 break;
-            case "INFO":
+            default:
                 Configurator.setLevel("PFbot", Level.INFO);
                 break;
         }
@@ -85,7 +94,8 @@ public class Boot {
             logger.fatal("Wrong credentials", e);
             return;
         }
-        modules = new Module[]{new Admin(), new Music(this), new Help(this)};
-        api.addEventListener(new Listener(this));
+        for(Module module : modules)
+            module.onInit(_boot);
+        api.addEventListener(new Listener(_boot));
     }
 }

@@ -1,4 +1,4 @@
-package dev.hevav.pfbot.API;
+package dev.hevav.pfbot.api;
 
 import net.dv8tion.jda.api.Region;
 
@@ -38,24 +38,23 @@ public class LocalizedString {
     /**
      * Get localized string
      *
-     * @param localizedString LocalizedString instance
      * @param region Server region
      * @return localized string
      */
-    public static String getLocalizedString(LocalizedString localizedString, Region region){
+    public String getLocalizedString(Region region){
         switch (region){
             case INDIA:
-                return (localizedString.indianString == null)? localizedString.englishString : localizedString.indianString;
+                return (this.indianString == null)? this.englishString : this.indianString;
             case BRAZIL:
-                return (localizedString.brazilianString == null)? localizedString.englishString : localizedString.brazilianString;
+                return (this.brazilianString == null)? this.englishString : this.brazilianString;
             case JAPAN:
-                return (localizedString.japaneseString == null)? localizedString.englishString : localizedString.japaneseString;
+                return (this.japaneseString == null)? this.englishString : this.japaneseString;
             case RUSSIA:
-                return (localizedString.russianString == null)? localizedString.englishString : localizedString.russianString;
+                return (this.russianString == null)? this.englishString : this.russianString;
             case HONG_KONG:
-                return (localizedString.chineseString == null)? localizedString.englishString : localizedString.chineseString;
+                return (this.chineseString == null)? this.englishString : this.chineseString;
             default:
-                return localizedString.englishString;
+                return this.englishString;
         }
     }
 }
