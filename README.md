@@ -2,24 +2,24 @@
 Powerful Open-Source Module-Based Music/Moderation bot for Discord. [Invite bot to your server](https://discordapp.com/oauth2/authorize?client_id=538670331938865163&permissions=36990272&scope=bot)
 
 ## Current modules
-- `Admin` - deletes messages
-- `Help` - shows help page 
-- `Music` - plays music from YouTube, SoundCloud, Twitch and more
-- `Status` - shows debug info
+-  `Admin` - deletes messages
+-  `Help` - shows help page 
+-  `Music` - plays music from YouTube, SoundCloud, Twitch and more
+-  `Status` - shows debug info
 
 ## Languages
 PFbot is multilingual bot, and you can help to add more languages. Now PFbot is translated to these languages:
-- [x] Russian
-- [x] English
-- [ ] Brazilian
-- [ ] Indian
-- [ ] Japanese
-- [ ] Chinese
+- [x]  Russian
+- [x]  English
+- [ ]  Brazilian
+- [ ]  Indian
+- [ ]  Japanese
+- [ ]  Chinese
 
 ## Requirements
-- `Docker`
-- `Discord token`
-- `YouTube Data API token`
+-  `Docker`
+-  `Discord token`
+-  `YouTube Data API token`
 
 ## Installation
 To run PFbot in production, it is recommended to use Docker.
@@ -38,9 +38,9 @@ You can set `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR` and `FATAL` log level. Def
 
 ## Writing modules
 ### Basic
-- Make a class that implements `dev.hevav.pfbot.api.Module`
-- Add module to `Boot.modules`
-- Profit
+-  Make a class that implements `dev.hevav.pfbot.api.Module`
+-  Add module to `Boot.modules`
+-  Profit
 ### Localization
 PFbot has a `LocalizedString` class, that translates Strings by guild's region. It supports Russian, English, Brazilian, Indian, Japanese and Chinese language.
 
@@ -48,11 +48,11 @@ PFbot has a `LocalizedString` class, that translates Strings by guild's region. 
 PFbot has a `EmbedHelper` class, that makes modules' response in PFbot style.
 
 ## Used libraries
-- [`log4j2`](https://github.com/apache/logging-log4j2) - Logging
-- [`JSoup`](https://jsoup.org/) - Parsing YouTube Search
-- [`JDA`](https://github.com/Javacord/Javacord) - Discord API implementation
-- [`lavaplayer`](https://github.com/sedmelluq/lavaplayer) - Player for Music module
+-  [`log4j2`](https://github.com/apache/logging-log4j2) - Logging
+-  [`JSoup`](https://jsoup.org/) - Parsing YouTube Search
+-  [`JDA`](https://github.com/Javacord/Javacord) - Discord API implementation
+-  [`lavaplayer`](https://github.com/sedmelluq/lavaplayer) - Player for Music module
  
 ## Thanks to
-- [TrainPix](https://github.com/Russia9/TrainPix)
-- [lavaplayer demo](https://github.com/sedmelluq/lavaplayer)
+-  [TrainPix](https://github.com/Russia9/TrainPix)
+-  [lavaplayer demo](https://github.com/sedmelluq/lavaplayer)

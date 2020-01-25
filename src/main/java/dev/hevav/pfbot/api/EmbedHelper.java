@@ -77,8 +77,9 @@ public class EmbedHelper {
                 return 65280;
             case Streaming:
                 return 8388863;
+            default:
+                return 0;
         }
-        return 0;
     }
 
     public enum PlayType {

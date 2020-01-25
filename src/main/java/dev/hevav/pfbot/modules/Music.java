@@ -15,7 +15,11 @@ import dev.hevav.pfbot.api.Module;
 import dev.hevav.pfbot.api.Trigger;
 import dev.hevav.pfbot.Boot;
 import net.dv8tion.jda.api.Region;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.GuildVoiceState;
+import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.VoiceChannel;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
@@ -357,6 +361,8 @@ public class Music implements Module {
                 case "\uD83D\uDD0A":
                     setVolume(event.getTextChannel(), getVolume(event.getTextChannel()) + 10);
                     break;
+                default:
+                    return;
             }
             event.getReaction().removeReaction(event.getUser()).complete();
         }
