@@ -62,12 +62,11 @@ public class Status implements Module {
         boot = _boot.get();
         logger.debug("Module Status was initialized");
     }
-    @Override
+
     public Trigger[] triggers() {
         return new Trigger[]{new Trigger("sl", shortLogDescription), new Trigger("status", logDescription)};
     }
 
-    @Override
     public void onMessage(GuildMessageReceivedEvent event, String trigger) {
         Region region = event.getGuild().getRegion();
         RuntimeMXBean rb = ManagementFactory.getRuntimeMXBean();
@@ -87,6 +86,9 @@ public class Status implements Module {
                         new MessageEmbed.Field(pingString.getLocalizedString(region), String.valueOf(boot.api.getGatewayPing()), true),
                         new MessageEmbed.Field(guildsString.getLocalizedString(region), String.valueOf(boot.api.getGuilds().size()), true)
                         ));
+                break;
+            default:
+                logger.warn(String.format("Proceeded strange trigger %s", trigger));
                 break;
         }
     }

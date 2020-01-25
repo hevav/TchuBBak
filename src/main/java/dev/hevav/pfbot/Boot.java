@@ -61,8 +61,14 @@ public class Boot {
                 case "yt_token":
                     yt_token = arg_split[1];
                     break;
+                default:
+                    logger.warn(String.format("Wrong variable %s", arg_split[0]));
+                    break;
             }
         }
+    }
+
+    public void main(){
         if(log_level == null)
             log_level = "WARN";
         switch (log_level) {

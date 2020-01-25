@@ -21,10 +21,6 @@ import java.lang.ref.WeakReference;
  * @since 1.0
  */
 public class Admin implements Module {
-    @Override
-    public Trigger[] triggers(){
-        return new Trigger[]{new Trigger("purge", "purge <int>", purgeDescription)};
-    }
 
     private LocalizedString noPermissions = new LocalizedString(
             "No permissions",
@@ -58,6 +54,10 @@ public class Admin implements Module {
     );
 
     private final Logger logger = LogManager.getLogger("PFbot");
+
+    public Trigger[] triggers(){
+        return new Trigger[]{new Trigger("purge", "purge <int>", purgeDescription)};
+    }
 
     public void onInit(WeakReference<Boot> _boot) {
         logger.debug("Module Admin was initialized");
@@ -93,6 +93,9 @@ public class Admin implements Module {
                             e.toString(),
                             event.getChannel());
                 }
+                break;
+            default:
+                logger.warn(String.format("Proceeded strange trigger %s", trigger));
                 break;
         }
     }

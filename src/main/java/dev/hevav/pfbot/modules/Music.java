@@ -28,7 +28,6 @@ import org.json.JSONTokener;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.*;
@@ -41,18 +40,6 @@ import java.util.*;
  * @since 1.0
  */
 public class Music implements Module {
-
-    public Trigger[] triggers() {
-        return new Trigger[]{
-                new Trigger("stop", stopDescription),
-                new Trigger("play", "play <track>", playDescription),
-                new Trigger("p", "p <track>", playDescription),
-                new Trigger("volume", "volume <int>", volumeDescription),
-                new Trigger("v", "v <int>", volumeDescription),
-                new Trigger("skip", skipDescription),
-                new Trigger("pause", pauseDescription),
-        };
-    }
 
     private final Logger logger = LogManager.getLogger("PFbot");
     private final AudioPlayerManager playerManager;
@@ -121,6 +108,18 @@ public class Music implements Module {
         this.playerManager = new DefaultAudioPlayerManager();
         AudioSourceManagers.registerRemoteSources(playerManager);
         AudioSourceManagers.registerLocalSource(playerManager);
+    }
+
+    public Trigger[] triggers() {
+        return new Trigger[]{
+                new Trigger("stop", stopDescription),
+                new Trigger("play", "play <track>", playDescription),
+                new Trigger("p", "p <track>", playDescription),
+                new Trigger("volume", "volume <int>", volumeDescription),
+                new Trigger("v", "v <int>", volumeDescription),
+                new Trigger("skip", skipDescription),
+                new Trigger("pause", pauseDescription),
+        };
     }
 
     public void onInit(WeakReference<Boot> _boot){
@@ -320,6 +319,9 @@ public class Music implements Module {
                     return;
                 }
                 pause(event.getChannel());
+                break;
+            default:
+                logger.warn(String.format("Proceeded strange trigger %s", trigger));
                 break;
         }
     }

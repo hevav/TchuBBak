@@ -35,11 +35,13 @@ public class Help implements Module {
     public Trigger[] triggers() {
         return new Trigger[]{new Trigger("help", helpDescription), new Trigger("h", helpDescription)};
     }
+
     public void onInit(WeakReference<Boot> _boot){
         boot = _boot.get();
         boot.api.getPresence().setActivity(Activity.listening(String.format("%shelp", boot.bot_prefix)));
         logger.debug("Module Help was initialized");
     }
+
     public void onMessage(GuildMessageReceivedEvent event, String trigger) {
         switch (trigger) {
             case "help":
@@ -61,6 +63,9 @@ public class Help implements Module {
                 }
                 for(List<MessageEmbed.Field> field : modules)
                     EmbedHelper.sendEmbed(helpDescription.getLocalizedString(event.getGuild().getRegion()), "", event.getChannel(), field);
+                break;
+            default:
+                logger.warn(String.format("Proceeded strange trigger %s", trigger));
                 break;
         }
     }
