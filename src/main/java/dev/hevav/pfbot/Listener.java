@@ -1,11 +1,13 @@
 package dev.hevav.pfbot;
 
-import dev.hevav.pfbot.API.Module;
-import dev.hevav.pfbot.API.Trigger;
+import dev.hevav.pfbot.api.Module;
+import dev.hevav.pfbot.api.Trigger;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.lang.ref.WeakReference;
 
 /**
  * Loads modules by trigger
@@ -17,8 +19,8 @@ public class Listener extends ListenerAdapter {
     private Boot boot;
     private static final Logger logger = LogManager.getLogger(Listener.class.getName());
 
-    public Listener(Boot _boot) {
-        boot = _boot;
+    public Listener(WeakReference<Boot> _boot) {
+        boot = _boot.get();
     }
 
     @Override
@@ -26,20 +28,18 @@ public class Listener extends ListenerAdapter {
         if (event.getAuthor().isBot()) return;
         String content = event.getMessage().getContentRaw();
         logger.debug("New message");
-        if(!content.startsWith(boot.bot_prefix)) return;
-        new Thread(() -> {
-            String msg_trigger = content.split(" ")[0].substring(boot.bot_prefix.length());
-            for (Module module : boot.modules) {
-                for (Trigger trigger : module.triggers()) {
-                    if (trigger.trigger.equals(msg_trigger)) {
-                        module.onMessage(event, msg_trigger);
-                        logger.trace("Proceeded " + module.getClass().getName());
-                        return;
-                    }
+        if (!content.startsWith(boot.bot_prefix)) return;
+        String msg_trigger = content.split(" ")[0].substring(boot.bot_prefix.length());
+        for (Module module : boot.modules) {
+            for (Trigger trigger : module.triggers()) {
+                if (trigger.trigger.equals(msg_trigger)) {
+                    module.onMessage(event, msg_trigger);
+                    logger.trace("Proceeded " + module.getClass().getName());
+                    return;
                 }
-                logger.trace("No trigger found");
             }
-        }).start();
+            logger.trace("No trigger found");
+        }
         logger.debug("End message");
     }
 }

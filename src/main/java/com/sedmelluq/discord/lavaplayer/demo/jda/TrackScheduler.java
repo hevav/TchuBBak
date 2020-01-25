@@ -4,13 +4,13 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
-import dev.hevav.pfbot.API.EmbedHelper;
+import dev.hevav.pfbot.api.EmbedHelper;
 import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import static dev.hevav.pfbot.API.EmbedHelper.sendEmbed;
+import static dev.hevav.pfbot.api.EmbedHelper.sendEmbed;
 
 /**
  * This class schedules tracks for the audio player. It contains the queue of tracks.
@@ -54,7 +54,7 @@ public class TrackScheduler extends AudioEventAdapter {
         // giving null to startTrack, which is a valid argument and will simply stop the player.
         AudioTrack track = queue.poll();
         if(track != null)
-            sendEmbed(track.getInfo().title, track.getDuration(), track.getInfo().uri, track.getInfo().author, (track.getInfo().isStream)? EmbedHelper.PlayType.Streaming : EmbedHelper.PlayType.Playing, textChannel);
+            sendEmbed(track.getInfo().title, String.valueOf(queue.size()), track.getDuration(), track.getInfo().uri, track.getInfo().author, (track.getInfo().isStream)? EmbedHelper.PlayType.Streaming : EmbedHelper.PlayType.Playing, textChannel);
         player.startTrack(track, false);
     }
 
