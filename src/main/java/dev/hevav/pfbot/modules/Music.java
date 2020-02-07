@@ -106,6 +106,13 @@ public class Music implements Module {
             null,
             null,
             null);
+    private LocalizedString leaveDescription = new LocalizedString(
+            "Выйти с голосового чата",
+            "Leave the voice channel",
+            null,
+            null,
+            null,
+            null);
 
     public Music() {
         this.musicManagers = new HashMap<>();
@@ -123,13 +130,14 @@ public class Music implements Module {
                 new Trigger("v", "v <int>", volumeDescription),
                 new Trigger("skip", skipDescription),
                 new Trigger("pause", pauseDescription),
+                new Trigger("leave", leaveDescription),
         };
     }
 
     public void onInit(WeakReference<Boot> _boot){
         Boot boot = _boot.get();
         yt_token = boot.yt_token;
-        boot.api.addEventListener(new MusicListener());
+        boot.api_ref.get().addEventListener(new MusicListener());
         logger.debug("Module Music was initialized");
     }
 
@@ -221,6 +229,9 @@ public class Music implements Module {
         musicManager.player.setPaused(!musicManager.player.isPaused());
     }
 
+    private void leaveVoiceChannel(TextChannel channel) {
+        channel.getGuild().getAudioManager().closeAudioConnection();
+    }
     private void stop(TextChannel channel) {
         GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
         musicManager.scheduler.onTrackEnd(musicManager.player, null, AudioTrackEndReason.CLEANUP);
@@ -323,6 +334,9 @@ public class Music implements Module {
                     return;
                 }
                 pause(event.getChannel());
+                break;
+            case "leave":
+                leaveVoiceChannel(event.getChannel());
                 break;
             default:
                 logger.warn(String.format("Proceeded strange trigger %s", trigger));

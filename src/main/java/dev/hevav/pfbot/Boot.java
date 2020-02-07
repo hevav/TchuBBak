@@ -22,7 +22,6 @@ import java.lang.ref.WeakReference;
  */
 public class Boot {
 
-   private  WeakReference<Boot> _boot = new WeakReference<>(this);
     //Modules to load
     public Module[] modules = new Module[]{
             new Admin(),
@@ -38,7 +37,7 @@ public class Boot {
     //Prefix to trigger
     public String bot_prefix;
     public String log_level;
-    public JDA api;
+    public WeakReference<JDA> api_ref;
 
     private static final Logger logger = LogManager.getLogger("PFbot");
     public Boot(String[] args){
@@ -94,12 +93,15 @@ public class Boot {
                 Configurator.setLevel("PFbot", Level.INFO);
                 break;
         }
+        JDA api;
         try {
             api = new JDABuilder(bot_token).build();
         } catch (javax.security.auth.login.LoginException e) {
             logger.fatal("Wrong credentials", e);
             return;
         }
+        api_ref = new WeakReference<JDA>(api);
+        WeakReference<Boot> _boot = new WeakReference<>(this);
         for(Module module : modules)
             module.onInit(_boot);
         api.addEventListener(new Listener(_boot));
