@@ -25,11 +25,10 @@ public class Boot {
     //Modules to load
     public Module[] modules = new Module[]{
             new Admin(),
-            new Music(),
+            //new Music(),
             new Help(),
             new Status()
     };
-    public WeakReference<Module[]> modules_ref = new WeakReference<>(modules);
 
     //YouTube v3 api token
     public String yt_token;
@@ -106,5 +105,6 @@ public class Boot {
         for(Module module : modules)
             module.onInit(_boot);
         api.addEventListener(new Listener(_boot));
+        modules = null;
     }
 }

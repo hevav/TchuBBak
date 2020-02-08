@@ -13,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -24,7 +25,7 @@ import java.util.List;
 public class Help implements Module {
     private final Logger logger = LogManager.getLogger("PFbot");
     private String bot_prefix;
-    private WeakReference<Module[]> modules_ref;
+    private List<Trigger> triggers = new ArrayList<>();
     private LocalizedString helpDescription = new LocalizedString(
             "Справка",
             "Help page",
@@ -41,7 +42,9 @@ public class Help implements Module {
         Boot boot = _boot.get();
         boot.api_ref.get().getPresence().setActivity(Activity.listening(String.format("%shelp", boot.bot_prefix)));
         bot_prefix = boot.bot_prefix;
-        modules_ref = boot.modules_ref;
+        for (Module module : boot.modules) {
+            triggers.addAll(Arrays.asList(module.triggers()));
+        }
         logger.debug("Module Help was initialized");
     }
 
@@ -49,23 +52,18 @@ public class Help implements Module {
         switch (trigger) {
             case "help":
             case "h":
-                List<List<MessageEmbed.Field>> modules = new ArrayList<>();
+                List<MessageEmbed.Field> modules = new ArrayList<>();
                 int fieldCount = 0;
-                int fieldListCount = 0;
-                modules.add(new ArrayList<>());
-                for (Module module : modules_ref.get()) {
-                    for (Trigger trigger1 : module.triggers()) {
-                        fieldCount++;
-                        modules.get(fieldListCount).add(new MessageEmbed.Field(bot_prefix + trigger1.trigger, trigger1.description.getLocalizedString(event.getGuild().getRegion()), true));
-                        if(fieldCount == 25){
-                            fieldCount = 0;
-                            fieldListCount++;
-                            modules.add(new ArrayList<>());
-                        }
+                for (Trigger trigger1 : triggers) {
+                    fieldCount++;
+                    modules.add(new MessageEmbed.Field(bot_prefix + trigger1.trigger, trigger1.description.getLocalizedString(event.getGuild().getRegion()), true));
+                    if(fieldCount == 25){
+                        fieldCount = 0;
+                        modules.clear();
+                        EmbedHelper.sendEmbed(helpDescription.getLocalizedString(event.getGuild().getRegion()), "", event.getChannel(), modules);
                     }
                 }
-                for(List<MessageEmbed.Field> field : modules)
-                    EmbedHelper.sendEmbed(helpDescription.getLocalizedString(event.getGuild().getRegion()), "", event.getChannel(), field);
+                EmbedHelper.sendEmbed(helpDescription.getLocalizedString(event.getGuild().getRegion()), "", event.getChannel(), modules);
                 break;
             default:
                 logger.warn(String.format("Proceeded strange trigger %s", trigger));

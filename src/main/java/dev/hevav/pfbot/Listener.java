@@ -16,13 +16,13 @@ import java.lang.ref.WeakReference;
  * @since 1.0
  */
 public class Listener extends ListenerAdapter {
-    private WeakReference<Module[]> modules_ref;
+    private Module[] modules;
     private String bot_prefix;
     private static final Logger logger = LogManager.getLogger(Listener.class.getName());
 
     public Listener(WeakReference<Boot> _boot) {
         Boot boot = _boot.get();
-        modules_ref = boot.modules_ref;
+        modules = boot.modules;
         bot_prefix = boot.bot_prefix;
     }
 
@@ -33,7 +33,7 @@ public class Listener extends ListenerAdapter {
         logger.debug("New message");
         if (!content.startsWith(bot_prefix)) return;
         String msg_trigger = content.split(" ")[0].substring(bot_prefix.length());
-        for (Module module : modules_ref.get()) {
+        for (Module module : modules) {
             for (Trigger trigger : module.triggers()) {
                 if (trigger.trigger.equals(msg_trigger)) {
                     module.onMessage(event, msg_trigger);
