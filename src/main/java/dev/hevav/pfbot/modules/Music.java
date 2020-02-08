@@ -15,7 +15,11 @@ import dev.hevav.pfbot.api.Module;
 import dev.hevav.pfbot.api.Trigger;
 import dev.hevav.pfbot.Boot;
 import net.dv8tion.jda.api.Region;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.GuildVoiceState;
+import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.VoiceChannel;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
@@ -28,7 +32,6 @@ import org.json.JSONTokener;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.*;
@@ -41,18 +44,6 @@ import java.util.*;
  * @since 1.0
  */
 public class Music implements Module {
-
-    public Trigger[] triggers() {
-        return new Trigger[]{
-                new Trigger("stop", stopDescription),
-                new Trigger("play", "play <track>", playDescription),
-                new Trigger("p", "p <track>", playDescription),
-                new Trigger("volume", "volume <int>", volumeDescription),
-                new Trigger("v", "v <int>", volumeDescription),
-                new Trigger("skip", skipDescription),
-                new Trigger("pause", pauseDescription),
-        };
-    }
 
     private final Logger logger = LogManager.getLogger("PFbot");
     private final AudioPlayerManager playerManager;
@@ -115,6 +106,13 @@ public class Music implements Module {
             null,
             null,
             null);
+    private LocalizedString leaveDescription = new LocalizedString(
+            "Выйти с голосового чата",
+            "Leave the voice channel",
+            null,
+            null,
+            null,
+            null);
 
     public Music() {
         this.musicManagers = new HashMap<>();
@@ -123,10 +121,23 @@ public class Music implements Module {
         AudioSourceManagers.registerLocalSource(playerManager);
     }
 
+    public Trigger[] triggers() {
+        return new Trigger[]{
+                new Trigger("stop", stopDescription),
+                new Trigger("play", "play <track>", playDescription),
+                new Trigger("p", "p <track>", playDescription),
+                new Trigger("volume", "volume <int>", volumeDescription),
+                new Trigger("v", "v <int>", volumeDescription),
+                new Trigger("skip", skipDescription),
+                new Trigger("pause", pauseDescription),
+                new Trigger("leave", leaveDescription),
+        };
+    }
+
     public void onInit(WeakReference<Boot> _boot){
         Boot boot = _boot.get();
         yt_token = boot.yt_token;
-        boot.api.addEventListener(new MusicListener());
+        boot.api_ref.get().addEventListener(new MusicListener());
         logger.debug("Module Music was initialized");
     }
 
@@ -218,6 +229,9 @@ public class Music implements Module {
         musicManager.player.setPaused(!musicManager.player.isPaused());
     }
 
+    private void leaveVoiceChannel(TextChannel channel) {
+        channel.getGuild().getAudioManager().closeAudioConnection();
+    }
     private void stop(TextChannel channel) {
         GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
         musicManager.scheduler.onTrackEnd(musicManager.player, null, AudioTrackEndReason.CLEANUP);
@@ -321,6 +335,12 @@ public class Music implements Module {
                 }
                 pause(event.getChannel());
                 break;
+            case "leave":
+                leaveVoiceChannel(event.getChannel());
+                break;
+            default:
+                logger.warn(String.format("Proceeded strange trigger %s", trigger));
+                break;
         }
     }
 
@@ -355,6 +375,8 @@ public class Music implements Module {
                 case "\uD83D\uDD0A":
                     setVolume(event.getTextChannel(), getVolume(event.getTextChannel()) + 10);
                     break;
+                default:
+                    return;
             }
             event.getReaction().removeReaction(event.getUser()).complete();
         }

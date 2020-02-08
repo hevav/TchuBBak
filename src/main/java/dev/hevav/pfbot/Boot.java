@@ -22,14 +22,13 @@ import java.lang.ref.WeakReference;
  */
 public class Boot {
 
-   private  WeakReference<Boot> _boot = new WeakReference<>(this);
     //Modules to load
-    public Module[] modules = new Module[]{
+    public WeakReference<Module[]> modules_ref = new WeakReference<>(new Module[]{
             new Admin(),
             new Music(),
             new Help(),
             new Status()
-    };
+    });
 
     //YouTube v3 api token
     public String yt_token;
@@ -38,7 +37,7 @@ public class Boot {
     //Prefix to trigger
     public String bot_prefix;
     public String log_level;
-    public JDA api;
+    public WeakReference<JDA> api_ref;
 
     private static final Logger logger = LogManager.getLogger("PFbot");
     public Boot(String[] args){
@@ -61,8 +60,14 @@ public class Boot {
                 case "yt_token":
                     yt_token = arg_split[1];
                     break;
+                default:
+                    logger.warn(String.format("Wrong variable %s", arg_split[0]));
+                    break;
             }
         }
+    }
+
+    public void main(){
         if(log_level == null)
             log_level = "WARN";
         switch (log_level) {
@@ -88,12 +93,16 @@ public class Boot {
                 Configurator.setLevel("PFbot", Level.INFO);
                 break;
         }
+        JDA api;
         try {
             api = new JDABuilder(bot_token).build();
         } catch (javax.security.auth.login.LoginException e) {
             logger.fatal("Wrong credentials", e);
             return;
         }
+        api_ref = new WeakReference<JDA>(api);
+        WeakReference<Boot> _boot = new WeakReference<>(this);
+        Module[] modules = modules_ref.get();
         for(Module module : modules)
             module.onInit(_boot);
         api.addEventListener(new Listener(_boot));

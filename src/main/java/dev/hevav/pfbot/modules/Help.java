@@ -23,7 +23,8 @@ import java.util.List;
  */
 public class Help implements Module {
     private final Logger logger = LogManager.getLogger("PFbot");
-    private Boot boot;
+    private String bot_prefix;
+    private WeakReference<Module[]> modules_ref;
     private LocalizedString helpDescription = new LocalizedString(
             "Справка",
             "Help page",
@@ -35,11 +36,15 @@ public class Help implements Module {
     public Trigger[] triggers() {
         return new Trigger[]{new Trigger("help", helpDescription), new Trigger("h", helpDescription)};
     }
+
     public void onInit(WeakReference<Boot> _boot){
-        boot = _boot.get();
-        boot.api.getPresence().setActivity(Activity.listening(String.format("%shelp", boot.bot_prefix)));
+        Boot boot = _boot.get();
+        boot.api_ref.get().getPresence().setActivity(Activity.listening(String.format("%shelp", boot.bot_prefix)));
+        bot_prefix = boot.bot_prefix;
+        modules_ref = boot.modules_ref;
         logger.debug("Module Help was initialized");
     }
+
     public void onMessage(GuildMessageReceivedEvent event, String trigger) {
         switch (trigger) {
             case "help":
@@ -48,10 +53,10 @@ public class Help implements Module {
                 int fieldCount = 0;
                 int fieldListCount = 0;
                 modules.add(new ArrayList<>());
-                for (Module module : boot.modules) {
+                for (Module module : modules_ref.get()) {
                     for (Trigger trigger1 : module.triggers()) {
                         fieldCount++;
-                        modules.get(fieldListCount).add(new MessageEmbed.Field(boot.bot_prefix + trigger1.trigger, trigger1.description.getLocalizedString(event.getGuild().getRegion()), true));
+                        modules.get(fieldListCount).add(new MessageEmbed.Field(bot_prefix + trigger1.trigger, trigger1.description.getLocalizedString(event.getGuild().getRegion()), true));
                         if(fieldCount == 25){
                             fieldCount = 0;
                             fieldListCount++;
@@ -61,6 +66,9 @@ public class Help implements Module {
                 }
                 for(List<MessageEmbed.Field> field : modules)
                     EmbedHelper.sendEmbed(helpDescription.getLocalizedString(event.getGuild().getRegion()), "", event.getChannel(), field);
+                break;
+            default:
+                logger.warn(String.format("Proceeded strange trigger %s", trigger));
                 break;
         }
     }

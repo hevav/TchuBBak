@@ -6,7 +6,7 @@
 
     <groupId>dev.hevav.pfbot</groupId>
     <artifactId>pfbot</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
     <name>PFbot</name>
     <repositories>
         <repository>
