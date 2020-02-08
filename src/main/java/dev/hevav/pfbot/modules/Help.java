@@ -24,7 +24,7 @@ import java.util.List;
 public class Help implements Module {
     private final Logger logger = LogManager.getLogger("PFbot");
     private String bot_prefix;
-    private Module[] modules_list;
+    private WeakReference<Module[]> modules_ref;
     private LocalizedString helpDescription = new LocalizedString(
             "Справка",
             "Help page",
@@ -41,7 +41,7 @@ public class Help implements Module {
         Boot boot = _boot.get();
         boot.api_ref.get().getPresence().setActivity(Activity.listening(String.format("%shelp", boot.bot_prefix)));
         bot_prefix = boot.bot_prefix;
-        modules_list = boot.modules;
+        modules_ref = boot.modules_ref;
         logger.debug("Module Help was initialized");
     }
 
@@ -53,7 +53,7 @@ public class Help implements Module {
                 int fieldCount = 0;
                 int fieldListCount = 0;
                 modules.add(new ArrayList<>());
-                for (Module module : modules_list) {
+                for (Module module : modules_ref.get()) {
                     for (Trigger trigger1 : module.triggers()) {
                         fieldCount++;
                         modules.get(fieldListCount).add(new MessageEmbed.Field(bot_prefix + trigger1.trigger, trigger1.description.getLocalizedString(event.getGuild().getRegion()), true));

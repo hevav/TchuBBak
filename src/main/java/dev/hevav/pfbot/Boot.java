@@ -23,12 +23,12 @@ import java.lang.ref.WeakReference;
 public class Boot {
 
     //Modules to load
-    public Module[] modules = new Module[]{
+    public WeakReference<Module[]> modules_ref = new WeakReference<>(new Module[]{
             new Admin(),
             new Music(),
             new Help(),
             new Status()
-    };
+    });
 
     //YouTube v3 api token
     public String yt_token;
@@ -102,6 +102,7 @@ public class Boot {
         }
         api_ref = new WeakReference<JDA>(api);
         WeakReference<Boot> _boot = new WeakReference<>(this);
+        Module[] modules = modules_ref.get();
         for(Module module : modules)
             module.onInit(_boot);
         api.addEventListener(new Listener(_boot));

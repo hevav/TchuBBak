@@ -1,5 +1,7 @@
 # PFbot [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) [![Discord](https://img.shields.io/discord/577547170748563496?label=Discord)](https://discord.gg/deYQmPV) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/e6ef8e0546bc4c8d8872fcf5691a513a)](https://www.codacy.com/manual/ilinpl/PFbot?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=hevav/PFbot&amp;utm_campaign=Badge_Grade)
-Powerful Open-Source Module-Based Music/Moderation bot for Discord. [Invite bot to your server](https://discordapp.com/oauth2/authorize?client_id=538670331938865163&permissions=36990272&scope=bot)
+Powerful Open-Source Module-Based Music/Moderation bot for Discord. Current version: `v1.2`<br>
+[Invite bot to your server](https://discordapp.com/oauth2/authorize?client_id=538670331938865163&permissions=36990272&scope=bot)<br>
+[Rate on top.gg](https://top.gg/bot/538670331938865163)
 
 ## Current modules
 -   `Admin` - deletes messages
@@ -29,7 +31,7 @@ Just pull PFbot image from Docker Hub and run it with command:
 ```
 You can also use jar file from releases:
 ```shell script
- $ java -jar pfbot-1.1.jar bot_token={{Discord bot token}} yt_token={{YouTube Data API token}} bot_token={{Modules commands prefix}} 
+ $ java -jar pfbot-1.2.jar bot_token={{Discord bot token}} yt_token={{YouTube Data API token}} bot_token={{Modules commands prefix}} 
 ```
 
 ## Logging
