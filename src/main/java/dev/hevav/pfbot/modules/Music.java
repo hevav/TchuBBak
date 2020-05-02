@@ -196,8 +196,8 @@ public class Music implements Module {
             public void trackLoaded(AudioTrack track) {
                 int queueSize = musicManager.scheduler.queue.size();
                 EmbedHelper.sendEmbed(track.getInfo().title, String.valueOf(queueSize),track.getDuration(), trackUrl, track.getInfo().author, EmbedHelper.PlayType.Added, channel);
-                if(queueSize == 0 && musicManager.player.getPlayingTrack() != null)
-                    EmbedHelper.sendEmbed(track.getInfo().title, String.valueOf(queueSize),track.getDuration(), trackUrl, track.getInfo().author, EmbedHelper.PlayType.Added, channel);
+                if(queueSize == 0 && musicManager.player.getPlayingTrack() == null)
+                    EmbedHelper.sendEmbed(track.getInfo().title, String.valueOf(queueSize),track.getDuration(), trackUrl, track.getInfo().author, EmbedHelper.PlayType.Playing, channel);
                 play(channel.getGuild(), musicManager, track, voiceChannel);
             }
 
