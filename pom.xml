@@ -6,7 +6,7 @@
 
     <groupId>dev.hevav.pfbot</groupId>
     <artifactId>pfbot</artifactId>
-    <version>1.2</version>
+    <version>1.3</version>
     <name>PFbot</name>
     <repositories>
         <repository>
@@ -14,6 +14,12 @@
             <name>bintray</name>
             <url>https://jcenter.bintray.com</url>
         </repository>
+        <repository>
+            <id>jcenter</id>
+            <name>jcenter-bintray</name>
+            <url>https://jcenter.bintray.com</url>
+        </repository>
+
     </repositories>
 
     <build>
@@ -67,12 +73,12 @@
         <dependency>
             <groupId>com.sedmelluq</groupId>
             <artifactId>lavaplayer</artifactId>
-            <version>1.3.33</version>
+            <version>1.3.47</version>
         </dependency>
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>4.1.0_95</version>
+            <version>4.1.1_142</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

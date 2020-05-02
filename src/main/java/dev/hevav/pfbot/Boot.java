@@ -25,7 +25,7 @@ public class Boot {
     //Modules to load
     public Module[] modules = new Module[]{
             new Admin(),
-            //new Music(),
+            new Music(),
             new Help(),
             new Status()
     };
@@ -95,12 +95,12 @@ public class Boot {
         }
         JDA api;
         try {
-            api = new JDABuilder(bot_token).build();
+            api = JDABuilder.createDefault(bot_token).build();
         } catch (javax.security.auth.login.LoginException e) {
             logger.fatal("Wrong credentials", e);
             return;
         }
-        api_ref = new WeakReference<JDA>(api);
+        api_ref = new WeakReference<>(api);
         WeakReference<Boot> _boot = new WeakReference<>(this);
         for(Module module : modules)
             module.onInit(_boot);

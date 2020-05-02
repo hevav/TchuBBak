@@ -9,17 +9,14 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import dev.hevav.pfbot.api.EmbedHelper;
 import dev.hevav.pfbot.api.LocalizedString;
 import dev.hevav.pfbot.api.Module;
 import dev.hevav.pfbot.api.Trigger;
 import dev.hevav.pfbot.Boot;
 import net.dv8tion.jda.api.Region;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.GuildVoiceState;
-import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.entities.VoiceChannel;
-import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
@@ -113,6 +110,20 @@ public class Music implements Module {
             null,
             null,
             null);
+    private LocalizedString removeDescription = new LocalizedString(
+            "Удалить трек в очереди(по умолчанию последний)",
+            "Remove a track from queue(last track by default)",
+            null,
+            null,
+            null,
+            null);
+    private LocalizedString queueDescription = new LocalizedString(
+            "Очередь",
+            "Queue",
+            null,
+            null,
+            null,
+            null);
 
     public Music() {
         this.musicManagers = new HashMap<>();
@@ -128,6 +139,10 @@ public class Music implements Module {
                 new Trigger("p", "p <track>", playDescription),
                 new Trigger("volume", "volume <int>", volumeDescription),
                 new Trigger("v", "v <int>", volumeDescription),
+                new Trigger("queue", queueDescription),
+                new Trigger("q", queueDescription),
+                new Trigger("remove", "remove <number>", removeDescription),
+                new Trigger("r", "r <number>", removeDescription),
                 new Trigger("skip", skipDescription),
                 new Trigger("pause", pauseDescription),
                 new Trigger("leave", leaveDescription),
@@ -136,8 +151,9 @@ public class Music implements Module {
 
     public void onInit(WeakReference<Boot> _boot){
         Boot boot = _boot.get();
+        assert boot != null;
         yt_token = boot.yt_token;
-        boot.api_ref.get().addEventListener(new MusicListener());
+        Objects.requireNonNull(boot.api_ref.get()).addEventListener(new MusicListener());
         logger.debug("Module Music was initialized");
     }
 
@@ -178,8 +194,10 @@ public class Music implements Module {
         playerManager.loadItemOrdered(musicManager, trackUrl, new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack track) {
-                EmbedHelper.sendEmbed(track.getInfo().title, "+1" ,track.getDuration(), trackUrl, track.getInfo().author, EmbedHelper.PlayType.Added, channel);
-
+                int queueSize = musicManager.scheduler.queue.size();
+                EmbedHelper.sendEmbed(track.getInfo().title, String.valueOf(queueSize),track.getDuration(), trackUrl, track.getInfo().author, EmbedHelper.PlayType.Added, channel);
+                if(queueSize == 0 && musicManager.player.getPlayingTrack() != null)
+                    EmbedHelper.sendEmbed(track.getInfo().title, String.valueOf(queueSize),track.getDuration(), trackUrl, track.getInfo().author, EmbedHelper.PlayType.Added, channel);
                 play(channel.getGuild(), musicManager, track, voiceChannel);
             }
 
@@ -190,7 +208,7 @@ public class Music implements Module {
                 if (firstTrack == null) {
                     firstTrack = playlist.getTracks().get(0);
                 }
-                EmbedHelper.sendEmbed(playlist.getName(), "+"+playlist.getTracks().size() , 0, trackUrl, "Playlist", EmbedHelper.PlayType.Playlist, channel);
+                EmbedHelper.sendEmbed(playlist.getName(), String.format("%d (+%d)", musicManager.scheduler.queue.size() + 1, playlist.getTracks().size()), 0, trackUrl, "Playlist", EmbedHelper.PlayType.Playlist, channel);
                 EmbedHelper.sendEmbed(firstTrack.getInfo().title, "N/A", firstTrack.getDuration(), firstTrack.getInfo().uri, firstTrack.getInfo().author, EmbedHelper.PlayType.Added, channel);
 
                 for(AudioTrack track : playlist.getTracks())
@@ -274,7 +292,7 @@ public class Music implements Module {
         String[] msg_split = event.getMessage().getContentRaw().split(" ");
         Region region = event.getGuild().getRegion();
         boolean notHasDJ = true;
-        for (Role role : event.getMember().getRoles()){
+        for (Role role : Objects.requireNonNull(event.getMember()).getRoles()){
             logger.trace(role.getName());
             if (role.getName().toLowerCase().contains("dj")) {
                 notHasDJ = false;
@@ -291,6 +309,7 @@ public class Music implements Module {
                     return;
                 }
                 GuildVoiceState voiceState = event.getMember().getVoiceState();
+                assert voiceState != null;
                 if(!voiceState.inVoiceChannel()){
                     return;
                 }
@@ -338,6 +357,27 @@ public class Music implements Module {
             case "leave":
                 leaveVoiceChannel(event.getChannel());
                 break;
+            case "queue":
+            case "q":
+                List<MessageEmbed.Field> queueFields = new ArrayList<>();
+                int trackQuantity = 0;
+                for(AudioTrack track : getGuildAudioPlayer(event.getGuild()).scheduler.queue){
+                    trackQuantity++;
+                    AudioTrackInfo info = track.getInfo();
+                    queueFields.add(new MessageEmbed.Field(info.author, String.format("%d) %s", trackQuantity, info.title), false));
+                    if(trackQuantity == 15)
+                        break;
+                }
+                EmbedHelper.sendEmbed(queueDescription.getLocalizedString(region), "", event.getChannel(), queueFields);
+                break;
+            case "remove":
+            case "r":
+                LinkedList<AudioTrack> queue = getGuildAudioPlayer(event.getGuild()).scheduler.queue;
+                if(msg_split.length > 1)
+                    queue.remove(Integer.parseInt(msg_split[1])-1);
+                else
+                    queue.remove(queue.size()-1);
+                break;
             default:
                 logger.warn(String.format("Proceeded strange trigger %s", trigger));
                 break;
@@ -348,7 +388,7 @@ public class Music implements Module {
         @Override
         public void onMessageReactionAdd(MessageReactionAddEvent event){
             boolean notHasDJ = true;
-            for (Role role : event.getMember().getRoles()){
+            for (Role role : Objects.requireNonNull(event.getMember()).getRoles()){
                 logger.trace(role.getName());
                 if (role.getName().toLowerCase().contains("dj")) {
                     notHasDJ = false;
@@ -357,7 +397,7 @@ public class Music implements Module {
             }
             if(notHasDJ)
                 return;
-            if(event.getUser().isBot())
+            if(Objects.requireNonNull(event.getUser()).isBot())
                 return;
             switch (event.getReactionEmote().getEmoji()){
                 case "⏯":
