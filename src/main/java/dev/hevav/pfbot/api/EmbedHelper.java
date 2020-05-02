@@ -1,12 +1,7 @@
 package dev.hevav.pfbot.api;
 
-import net.dv8tion.jda.api.entities.EmbedType;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
 
-import java.time.Duration;
-import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -34,16 +29,16 @@ public class EmbedHelper {
             null);
 
     public static void sendEmbed(String title, String msg, TextChannel textChannel) {
-        textChannel.sendMessage(new MessageEmbed(null, title, msg, EmbedType.UNKNOWN, null, 16711680, null, null, new MessageEmbed.AuthorInfo("PFbot", null, "https://cdn.discordapp.com/avatars/538670331938865163/bc903e523601f6535ea6f6909e51ff5c.png", null), null, new MessageEmbed.Footer("PFbot by hevav and OSS community", "https://cdn.discordapp.com/avatars/538670331938865163/bc903e523601f6535ea6f6909e51ff5c.png", null), null, null)).complete();
+        SelfUser bot = textChannel.getJDA().getSelfUser();
+        textChannel.sendMessage(new MessageEmbed(null, title, msg, EmbedType.UNKNOWN, null, 0xFFCC66, null, null, new MessageEmbed.AuthorInfo(bot.getName(), null, bot.getAvatarUrl(), null), null, new MessageEmbed.Footer("#stayhome", null, null), null, null)).complete();
     }
 
     public static void sendEmbed(String title, String msg, TextChannel textChannel, List<MessageEmbed.Field> fields) {
-        textChannel.sendMessage(new MessageEmbed(null, title, msg, EmbedType.UNKNOWN, null, 16711680, null, null, new MessageEmbed.AuthorInfo("PFbot", null, "https://cdn.discordapp.com/avatars/538670331938865163/bc903e523601f6535ea6f6909e51ff5c.png", null), null, new MessageEmbed.Footer("PFbot by hevav and OSS community", "https://cdn.discordapp.com/avatars/538670331938865163/bc903e523601f6535ea6f6909e51ff5c.png", null), null, fields)).complete();
+        SelfUser bot = textChannel.getJDA().getSelfUser();
+        textChannel.sendMessage(new MessageEmbed(null, title, msg, EmbedType.UNKNOWN, null, 0xFFCC66, null, null, new MessageEmbed.AuthorInfo(bot.getName(), null, bot.getAvatarUrl(), null), null, new MessageEmbed.Footer("#stayhome", null, null), null, fields)).complete();
     }
     public static void sendEmbed(String trackName, String queuePos, long length, String trackUrl, String author, PlayType type, TextChannel textChannel) {
-        String stringLength = LocalTime.MIN.plus(
-                Duration.ofSeconds( length )
-        ).toString();
+
         Message msg = textChannel.sendMessage(new MessageEmbed(
                 trackUrl,
                 trackName,
@@ -55,10 +50,10 @@ public class EmbedHelper {
                 null,
                 new MessageEmbed.AuthorInfo(author, null, null, null),
                 null,
-                new MessageEmbed.Footer("PFbot by hevav and OSS community", "https://cdn.discordapp.com/avatars/538670331938865163/bc903e523601f6535ea6f6909e51ff5c.png", null),
+                new MessageEmbed.Footer("#stayhome", null, null),
                 null,
                 Arrays.asList(
-                        new MessageEmbed.Field(trackLengthString.getLocalizedString(textChannel.getGuild().getRegion()), stringLength,true),
+                        new MessageEmbed.Field(trackLengthString.getLocalizedString(textChannel.getGuild().getRegion()), formatTiming(length, length),true),
                         new MessageEmbed.Field(queuePosString.getLocalizedString(textChannel.getGuild().getRegion()), queuePos, true))
                 )
         ).complete();
@@ -69,16 +64,33 @@ public class EmbedHelper {
         msg.addReaction("\uD83D\uDD0A").complete(); //loud
     }
 
+    private static String formatTiming(long timing, long maximum) {
+        timing = Math.min(timing, maximum) / 1000;
+
+        long seconds = timing % 60;
+        timing /= 60;
+        long minutes = timing % 60;
+        timing /= 60;
+        long hours = timing;
+
+        if (maximum >= 3600000L) {
+            return String.format("%d:%02d:%02d", hours, minutes, seconds);
+        } else {
+            return String.format("%d:%02d", minutes, seconds);
+        }
+    }
+
     private static int typeToColor(PlayType type) {
         switch (type) {
             case Added:
-                return 16776960;
+                return 0xFFCC66;
             case Playing:
-                return 65280;
+                return 0x33CC33;
             case Streaming:
                 return 8388863;
+            default:
+                return 0;
         }
-        return 0;
     }
 
     public enum PlayType {

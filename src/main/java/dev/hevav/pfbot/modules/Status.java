@@ -5,6 +5,7 @@ import dev.hevav.pfbot.api.EmbedHelper;
 import dev.hevav.pfbot.api.LocalizedString;
 import dev.hevav.pfbot.api.Module;
 import dev.hevav.pfbot.api.Trigger;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Region;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
@@ -19,7 +20,6 @@ import java.time.LocalTime;
 import java.util.Arrays;
 public class Status implements Module {
 
-    private Boot boot;
     private LocalizedString shortLogDescription = new LocalizedString(
             "Сокращенные логи",
             "Short logs",
@@ -56,18 +56,19 @@ public class Status implements Module {
             null,
             null);
 
+    private WeakReference<JDA> api_ref;
     private final Logger logger = LogManager.getLogger("PFbot");
 
     public void onInit(WeakReference<Boot> _boot) {
-        boot = _boot.get();
+        Boot boot = _boot.get();
+        api_ref = boot.api_ref;
         logger.debug("Module Status was initialized");
     }
-    @Override
+
     public Trigger[] triggers() {
         return new Trigger[]{new Trigger("sl", shortLogDescription), new Trigger("status", logDescription)};
     }
 
-    @Override
     public void onMessage(GuildMessageReceivedEvent event, String trigger) {
         Region region = event.getGuild().getRegion();
         RuntimeMXBean rb = ManagementFactory.getRuntimeMXBean();
@@ -82,11 +83,15 @@ public class Status implements Module {
                 ));
                 break;
             case "status":
+                JDA api = api_ref.get();
                 EmbedHelper.sendEmbed(logDescription.getLocalizedString(region), "", event.getChannel(), Arrays.asList(
                         new MessageEmbed.Field(upTimeString.getLocalizedString(region), stringUptime, true),
-                        new MessageEmbed.Field(pingString.getLocalizedString(region), String.valueOf(boot.api.getGatewayPing()), true),
-                        new MessageEmbed.Field(guildsString.getLocalizedString(region), String.valueOf(boot.api.getGuilds().size()), true)
+                        new MessageEmbed.Field(pingString.getLocalizedString(region), String.valueOf(api.getGatewayPing()), true),
+                        new MessageEmbed.Field(guildsString.getLocalizedString(region), String.valueOf(api.getGuilds().size()), true)
                         ));
+                break;
+            default:
+                logger.warn(String.format("Proceeded strange trigger %s", trigger));
                 break;
         }
     }

@@ -7,8 +7,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import dev.hevav.pfbot.api.EmbedHelper;
 import net.dv8tion.jda.api.entities.TextChannel;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.LinkedList;
 
 import static dev.hevav.pfbot.api.EmbedHelper.sendEmbed;
 
@@ -17,7 +16,7 @@ import static dev.hevav.pfbot.api.EmbedHelper.sendEmbed;
  */
 public class TrackScheduler extends AudioEventAdapter {
     private final AudioPlayer player;
-    private final BlockingQueue<AudioTrack> queue;
+    public final LinkedList<AudioTrack> queue;
     /**
      * TextChannel to send tracks
      */
@@ -28,7 +27,7 @@ public class TrackScheduler extends AudioEventAdapter {
      */
     public TrackScheduler(AudioPlayer player, TextChannel channel) {
         this.player = player;
-        this.queue = new LinkedBlockingQueue<>();
+        this.queue = new LinkedList<>();
         textChannel = channel;
     }
 

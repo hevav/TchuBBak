@@ -9,6 +9,7 @@ package dev.hevav.pfbot;
 public class PFbot {
 
     public static void main(String[] args) {
-        new Boot(args);
+        Boot boot = new Boot(args);
+        boot.main();
     }
 }
