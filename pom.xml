@@ -43,7 +43,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <finalName>${project.artifactId}-${project.version}</finalName>
+                            <finalName>${project.artifactId}</finalName>
                             <outputDirectory>${project.build.directory}</outputDirectory>
                             <transformers>
                                 <transformer

@@ -40,7 +40,7 @@ You can set `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR` and `FATAL` log level. Def
 
 ## Writing modules
 ### Basic
--   Make a class that implements `dev.hevav.pfbot.api.Module`
+-   Make a class that implements `dev.hevav.pfbot.types.Module`
 -   Add module to `Boot.modules`
 -   Profit
 ### Localization

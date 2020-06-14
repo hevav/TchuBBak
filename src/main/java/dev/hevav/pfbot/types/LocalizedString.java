@@ -1,6 +1,4 @@
-package dev.hevav.pfbot.api;
-
-import net.dv8tion.jda.api.Region;
+package dev.hevav.pfbot.types;
 
 /**
  * Strings localized by server's region
@@ -33,28 +31,5 @@ public class LocalizedString {
         indianString = _indianString;
         japaneseString = _japaneseString;
         chineseString = _chineseString;
-    }
-
-    /**
-     * Get localized string
-     *
-     * @param region Server region
-     * @return localized string
-     */
-    public String getLocalizedString(Region region){
-        switch (region){
-            case INDIA:
-                return (this.indianString == null)? this.englishString : this.indianString;
-            case BRAZIL:
-                return (this.brazilianString == null)? this.englishString : this.brazilianString;
-            case JAPAN:
-                return (this.japaneseString == null)? this.englishString : this.japaneseString;
-            case RUSSIA:
-                return (this.russianString == null)? this.englishString : this.russianString;
-            case HONG_KONG:
-                return (this.chineseString == null)? this.englishString : this.chineseString;
-            default:
-                return this.englishString;
-        }
     }
 }
