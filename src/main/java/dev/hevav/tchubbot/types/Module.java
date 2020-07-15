@@ -1,6 +1,6 @@
-package dev.hevav.pfbot.types;
+package dev.hevav.tchubbot.types;
 
-import dev.hevav.pfbot.api.Config;
+import dev.hevav.tchubbot.api.Config;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
@@ -15,11 +15,17 @@ import java.util.List;
  */
 public interface Module {
     /**
-     * Short name of module(for website)
+     * Short name of module
      *
      * @return short name
      */
     String shortName();
+    /**
+     * Description of module
+     *
+     * @return description
+     */
+    LocalizedString description();
     /**
      * Trigger to load this module
      *
@@ -38,9 +44,9 @@ public interface Module {
      * Process event for this module
      *
      * @param event event
-     * @param trigger trigger with excluded prefix
+     * @param parsedText trigger with excluded prefix and other text
      */
-    void onMessage(GuildMessageReceivedEvent event, String trigger);
+    void onMessage(GuildMessageReceivedEvent event, String[] parsedText);
 
     /**
      * Process event for this module

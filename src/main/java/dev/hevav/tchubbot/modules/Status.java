@@ -1,10 +1,11 @@
-package dev.hevav.pfbot.modules;
+package dev.hevav.tchubbot.modules;
 
-import dev.hevav.pfbot.api.Config;
-import dev.hevav.pfbot.api.EmbedHelper;
-import dev.hevav.pfbot.api.Translator;
-import dev.hevav.pfbot.types.Module;
-import dev.hevav.pfbot.types.Trigger;
+import dev.hevav.tchubbot.api.Config;
+import dev.hevav.tchubbot.api.EmbedHelper;
+import dev.hevav.tchubbot.api.Translator;
+import dev.hevav.tchubbot.types.LocalizedString;
+import dev.hevav.tchubbot.types.Module;
+import dev.hevav.tchubbot.types.Trigger;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -22,12 +23,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static dev.hevav.pfbot.translations.StatusStrings.*;
+import static dev.hevav.tchubbot.translations.StatusStrings.*;
 
 public class Status implements Module {
 
     private WeakReference<JDA> api_ref;
-    private final Logger logger = LogManager.getLogger("PFbot");
+    private final Logger logger = LogManager.getLogger("TchuBBak");
 
     public void onInit(WeakReference<Config> _boot) {
         Config config = _boot.get();
@@ -42,6 +43,11 @@ public class Status implements Module {
     }
 
     @Override
+    public LocalizedString description() {
+        return logDescription;
+    }
+
+    @Override
     public List<Trigger> triggers() {
         return Arrays.asList(new Trigger("sl", shortLogDescription), new Trigger("status", logDescription));
     }
@@ -49,6 +55,11 @@ public class Status implements Module {
     @Override
     public List<Trigger> audioTriggers() {
         return new ArrayList<Trigger>();
+    }
+
+    @Override
+    public void onMessage(GuildMessageReceivedEvent event, String[] parsedText) {
+
     }
 
     public void onMessage(GuildMessageReceivedEvent event, String trigger) {

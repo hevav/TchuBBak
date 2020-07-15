@@ -1,4 +1,4 @@
-package dev.hevav.pfbot.modules;
+package dev.hevav.tchubbot.modules;
 
 import com.sedmelluq.discord.lavaplayer.demo.jda.GuildMusicManager;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
@@ -10,18 +10,18 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
-import dev.hevav.pfbot.api.EmbedHelper;
-import dev.hevav.pfbot.api.Translator;
-import dev.hevav.pfbot.api.VoiceAdapter;
-import dev.hevav.pfbot.types.Module;
-import dev.hevav.pfbot.types.Trigger;
-import dev.hevav.pfbot.api.Config;
+import dev.hevav.tchubbot.api.EmbedHelper;
+import dev.hevav.tchubbot.api.Translator;
+import dev.hevav.tchubbot.api.VoiceAdapter;
+import dev.hevav.tchubbot.types.LocalizedString;
+import dev.hevav.tchubbot.types.Module;
+import dev.hevav.tchubbot.types.Trigger;
+import dev.hevav.tchubbot.api.Config;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.managers.AudioManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
@@ -33,7 +33,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.*;
 
-import static dev.hevav.pfbot.translations.MusicStrings.*;
+import static dev.hevav.tchubbot.translations.MusicStrings.*;
 
 /**
  * Music module
@@ -44,7 +44,7 @@ import static dev.hevav.pfbot.translations.MusicStrings.*;
  */
 public class Music implements Module {
 
-    private final Logger logger = LogManager.getLogger("PFbot");
+    private final Logger logger = LogManager.getLogger("TchuBBak");
     private final AudioPlayerManager playerManager;
     private final Map<Long, GuildMusicManager> musicManagers;
     private String yt_token;
@@ -60,6 +60,11 @@ public class Music implements Module {
     @Override
     public String shortName() {
         return "music";
+    }
+
+    @Override
+    public LocalizedString description() {
+        return moduleDescription;
     }
 
     public List<Trigger> triggers() {
@@ -128,7 +133,7 @@ public class Music implements Module {
                 EmbedHelper.sendEmbed(track.getInfo().title, String.valueOf(queueSize),track.getDuration(), trackUrl, track.getInfo().author, EmbedHelper.PlayType.Added, channel);
                 if(queueSize == 0 && musicManager.player.getPlayingTrack() == null)
                     EmbedHelper.sendEmbed(track.getInfo().title, String.valueOf(queueSize),track.getDuration(), trackUrl, track.getInfo().author, EmbedHelper.PlayType.Playing, channel);
-                play(channel.getGuild(), musicManager, track, voiceChannel);
+                play(musicManager, track, voiceChannel);
             }
 
             @Override
@@ -142,7 +147,7 @@ public class Music implements Module {
                 EmbedHelper.sendEmbed(firstTrack.getInfo().title, "N/A", firstTrack.getDuration(), firstTrack.getInfo().uri, firstTrack.getInfo().author, EmbedHelper.PlayType.Added, channel);
 
                 for(AudioTrack track : playlist.getTracks())
-                    play(channel.getGuild(), musicManager, track, voiceChannel);
+                    play(musicManager, track, voiceChannel);
             }
 
             @Override
@@ -159,11 +164,8 @@ public class Music implements Module {
         });
     }
 
-    private void play(Guild guild, GuildMusicManager musicManager, AudioTrack track, VoiceChannel voiceChannel) {
-        AudioManager audioManager = guild.getAudioManager();
-        if(!audioManager.isConnected() && !audioManager.isAttemptingToConnect())
-            audioManager.openAudioConnection(voiceChannel);
-
+    private void play(GuildMusicManager musicManager, AudioTrack track, VoiceChannel voiceChannel) {
+        VoiceAdapter.joinChannel(voiceChannel);
         musicManager.scheduler.queue(track);
     }
 
@@ -218,8 +220,7 @@ public class Music implements Module {
         }
     }
 
-    public void onMessage(GuildMessageReceivedEvent event, String trigger) {
-        String[] msg_split = event.getMessage().getContentRaw().split(" ");
+    public void onMessage(GuildMessageReceivedEvent event, String[] parsedText) {
         boolean notHasDJ = true;
         for (Role role : Objects.requireNonNull(event.getMember()).getRoles()){
             logger.trace(role.getName());
@@ -228,19 +229,19 @@ public class Music implements Module {
                 break;
             }
         }
-        switch (trigger) {
+        switch (parsedText[0]) {
             case "play":
             case "p":
-                if (msg_split.length == 0) {
+                if (parsedText.length == 1) {
                     EmbedHelper.sendEmbed(Translator.translateString(errorMusicDescription, event.getGuild()),
                             "Link to video is wrong",
                             event.getChannel());
                     return;
                 }
-                if (msg_split[1].startsWith("http://") || msg_split[1].startsWith("https://") || msg_split[1].startsWith("www."))
-                    loadAndPlay(event.getChannel(), msg_split[1], VoiceAdapter.getChannel(event.getGuild().getIdLong()));
+                if (parsedText[1].startsWith("http://") || parsedText[1].startsWith("https://") || parsedText[1].startsWith("www."))
+                    loadAndPlay(event.getChannel(), parsedText[1], VoiceAdapter.getChannel(event.getGuild().getIdLong(), Objects.requireNonNull(event.getMember().getVoiceState()).getChannel()));
                 else
-                    youtubeSearch(event.getMessage().getContentRaw().replaceFirst(msg_split[0]+" ", ""), event.getChannel(), VoiceAdapter.getChannel(event.getGuild().getIdLong()));
+                    youtubeSearch(String.join(" ", Arrays.copyOfRange(parsedText, 1, parsedText.length)), event.getChannel(), VoiceAdapter.getChannel(event.getGuild().getIdLong(), Objects.requireNonNull(event.getMember().getVoiceState()).getChannel()));
                 break;
             case "volume":
             case "v":
@@ -249,7 +250,7 @@ public class Music implements Module {
                     return;
                 }
                 try {
-                    setVolume(event.getChannel(), Integer.parseInt(msg_split[1]));
+                    setVolume(event.getChannel(), Integer.parseInt(parsedText[1]));
                 } catch (Exception e) {
                     logger.debug(e);
                     EmbedHelper.sendEmbed(Translator.translateString(errorMusicDescription, event.getGuild()),
@@ -301,13 +302,13 @@ public class Music implements Module {
             case "remove":
             case "r":
                 LinkedList<AudioTrack> queue = getGuildAudioPlayer(event.getGuild()).scheduler.queue;
-                if(msg_split.length > 1)
-                    queue.remove(Integer.parseInt(msg_split[1])-1);
+                if(parsedText.length > 1)
+                    queue.remove(Integer.parseInt(parsedText[1])-1);
                 else
                     queue.remove(queue.size()-1);
                 break;
             default:
-                logger.warn(String.format("Proceeded strange trigger %s", trigger));
+                logger.warn(String.format("Proceeded strange trigger %s", parsedText[0]));
                 break;
         }
     }

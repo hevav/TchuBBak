@@ -1,10 +1,10 @@
-package dev.hevav.pfbot.api;
+package dev.hevav.tchubbot.api;
 
-import dev.hevav.pfbot.types.Module;
-import dev.hevav.pfbot.modules.Admin;
-import dev.hevav.pfbot.modules.Help;
-import dev.hevav.pfbot.modules.Music;
-import dev.hevav.pfbot.modules.Status;
+import dev.hevav.tchubbot.types.Module;
+import dev.hevav.tchubbot.modules.Admin;
+import dev.hevav.tchubbot.modules.Help;
+import dev.hevav.tchubbot.modules.Music;
+import dev.hevav.tchubbot.modules.Status;
 import net.dv8tion.jda.api.JDA;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,7 +12,7 @@ import org.apache.logging.log4j.Logger;
 import java.lang.ref.WeakReference;
 
 /**
- * Configuration for PFbot
+ * Configuration for TchuBBak
  *
  * @author hevav
  * @since 1.0
@@ -35,7 +35,7 @@ public class Config {
     public String log_level;
     public WeakReference<JDA> api_ref;
 
-    private final Logger logger = LogManager.getLogger("PFbot");
+    private final Logger logger = LogManager.getLogger("TchuBBak");
 
     public Config(String[] args){
         yt_token = System.getenv("pf_yt_token");

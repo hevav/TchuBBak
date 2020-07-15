@@ -1,11 +1,18 @@
-package dev.hevav.pfbot.translations;
+package dev.hevav.tchubbot.translations;
 
-import dev.hevav.pfbot.types.LocalizedString;
+import dev.hevav.tchubbot.types.LocalizedString;
 
 public class MusicStrings {
     public static LocalizedString playDescription = new LocalizedString(
             "Сыграть <track> или добавить очередь",
             "Play <track> or add to queue",
+            null,
+            null,
+            null,
+            null);
+    public static LocalizedString moduleDescription = new LocalizedString(
+            "Играйте музыку с YouTube, Soundcloud и других платформ",
+            "Play music from YouTube, SoundCloud, etc.",
             null,
             null,
             null,

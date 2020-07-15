@@ -1,6 +1,6 @@
-package dev.hevav.pfbot.translations;
+package dev.hevav.tchubbot.translations;
 
-import dev.hevav.pfbot.types.LocalizedString;
+import dev.hevav.tchubbot.types.LocalizedString;
 
 public class EmbedHelperStrings {
     public static LocalizedString DJDescription = new LocalizedString(

@@ -1,6 +1,6 @@
-package dev.hevav.pfbot.api;
+package dev.hevav.tchubbot.api;
 
-import dev.hevav.pfbot.types.LocalizedString;
+import dev.hevav.tchubbot.types.LocalizedString;
 import net.dv8tion.jda.api.Region;
 import net.dv8tion.jda.api.entities.Guild;
 

@@ -1,10 +1,11 @@
-package dev.hevav.pfbot.modules;
+package dev.hevav.tchubbot.modules;
 
-import dev.hevav.pfbot.api.Config;
-import dev.hevav.pfbot.api.EmbedHelper;
-import dev.hevav.pfbot.api.Translator;
-import dev.hevav.pfbot.types.Module;
-import dev.hevav.pfbot.types.Trigger;
+import dev.hevav.tchubbot.api.Config;
+import dev.hevav.tchubbot.api.EmbedHelper;
+import dev.hevav.tchubbot.api.Translator;
+import dev.hevav.tchubbot.types.LocalizedString;
+import dev.hevav.tchubbot.types.Module;
+import dev.hevav.tchubbot.types.Trigger;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
@@ -18,7 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import static dev.hevav.pfbot.translations.AdminStrings.*;
+import static dev.hevav.tchubbot.translations.AdminStrings.*;
 
 /**
  * Admin features bot
@@ -28,15 +29,22 @@ import static dev.hevav.pfbot.translations.AdminStrings.*;
  */
 public class Admin implements Module {
 
-    private final Logger logger = LogManager.getLogger("PFbot");
+    private final Logger logger = LogManager.getLogger("TchuBBak");
 
     public List<Trigger> triggers(){
-        return Arrays.asList(new Trigger("purge", "purge <int>", purgeDescription));
+        return Arrays.asList(new Trigger("purge", "purge <int>", purgeDescription),
+                new Trigger("ban", "ban [ip] <member> [message]", banDescription),
+                new Trigger("kick", "kick <member> [message]", kickDescription));
     }
 
     @Override
     public String shortName() {
         return "admin";
+    }
+
+    @Override
+    public LocalizedString description() {
+        return adminDescription;
     }
 
     @Override
@@ -49,9 +57,9 @@ public class Admin implements Module {
     }
 
     @Override
-    public void onMessage(GuildMessageReceivedEvent event, String trigger){
+    public void onMessage(GuildMessageReceivedEvent event, String[] parsedText){
         String[] msg_split = event.getMessage().getContentRaw().split(" ");
-        switch (trigger){
+        switch (parsedText[0]){
             case "purge":
                 if (!Objects.requireNonNull(event.getMember()).hasPermission(Permission.MESSAGE_MANAGE)){
                     EmbedHelper.sendEmbed(Translator.translateString(noPermissions, event.getGuild()),
@@ -79,7 +87,7 @@ public class Admin implements Module {
                 }
                 break;
             default:
-                logger.warn(String.format("Proceeded strange trigger %s", trigger));
+                logger.warn(String.format("Proceeded strange trigger %s", parsedText[0]));
                 break;
         }
     }

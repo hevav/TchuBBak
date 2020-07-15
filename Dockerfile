@@ -1,5 +1,5 @@
 FROM openjdk:8
 LABEL maintainer="work@hevav.dev"
-COPY ./target/pfbot-shaded.jar /pfbot/pfbot.jar
-WORKDIR /pfbot
-CMD java -jar pfbot.jar
+COPY ./target/TchuBBak-shaded.jar /TchuBBak/TchuBBak.jar
+WORKDIR /TchuBBak
+CMD java -jar TchuBBak.jar

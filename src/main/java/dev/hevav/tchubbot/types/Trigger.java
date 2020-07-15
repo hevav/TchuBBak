@@ -1,4 +1,4 @@
-package dev.hevav.pfbot.types;
+package dev.hevav.tchubbot.types;
 
 /**
  * Class to represent triggers for loading modules

@@ -1,7 +1,7 @@
-package dev.hevav.pfbot;
+package dev.hevav.tchubbot;
 
-import dev.hevav.pfbot.api.Config;
-import dev.hevav.pfbot.types.Module;
+import dev.hevav.tchubbot.api.Config;
+import dev.hevav.tchubbot.types.Module;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import org.apache.logging.log4j.Level;
@@ -17,9 +17,9 @@ import java.lang.ref.WeakReference;
  * @author hevav
  * @since 1.0
  */
-public class PFbot {
+public class TchuBBak {
 
-    private static final Logger logger = LogManager.getLogger("PFbot");
+    private static final Logger logger = LogManager.getLogger("TchuBBak");
 
     public static void main(String[] args) {
         Config config = new Config(args);
@@ -27,25 +27,25 @@ public class PFbot {
             config.log_level = "WARN";
         switch (config.log_level) {
             case "OFF":
-                Configurator.setLevel("PFbot", Level.OFF);
+                Configurator.setLevel("TchuBBak", Level.OFF);
                 break;
             case "FATAL":
-                Configurator.setLevel("PFbot", Level.FATAL);
+                Configurator.setLevel("TchuBBak", Level.FATAL);
                 break;
             case "ERROR":
-                Configurator.setLevel("PFbot", Level.ERROR);
+                Configurator.setLevel("TchuBBak", Level.ERROR);
                 break;
             case "WARN":
-                Configurator.setLevel("PFbot", Level.WARN);
+                Configurator.setLevel("TchuBBak", Level.WARN);
                 break;
             case "DEBUG":
-                Configurator.setLevel("PFbot", Level.DEBUG);
+                Configurator.setLevel("TchuBBak", Level.DEBUG);
                 break;
             case "TRACE":
-                Configurator.setLevel("PFbot", Level.TRACE);
+                Configurator.setLevel("TchuBBak", Level.TRACE);
                 break;
             default:
-                Configurator.setLevel("PFbot", Level.INFO);
+                Configurator.setLevel("TchuBBak", Level.INFO);
                 break;
         }
         JDA api;

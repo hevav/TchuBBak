@@ -1,15 +1,13 @@
-package dev.hevav.pfbot;
+package dev.hevav.tchubbot;
 
-import dev.hevav.pfbot.api.Config;
-import dev.hevav.pfbot.api.Database;
-import dev.hevav.pfbot.types.Module;
-import dev.hevav.pfbot.types.Trigger;
+import dev.hevav.tchubbot.api.Config;
+import dev.hevav.tchubbot.api.Database;
+import dev.hevav.tchubbot.types.Module;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.xml.crypto.Data;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.List;
@@ -35,21 +33,24 @@ public class Listener extends ListenerAdapter {
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
         if (event.getAuthor().isBot()) return;
-        String content = event.getMessage().getContentRaw();
+        String[] content = event.getMessage().getContentRaw().split(" ");
         logger.debug("New message");
-        if (!content.startsWith(bot_prefix)) return;
-        String msg_trigger = content.split(" ")[0].substring(bot_prefix.length());
+        if (!content[0].startsWith(bot_prefix)) return;
+        content[0] = content[0].substring(bot_prefix.length());
+        String msg_trigger = content[0];
         List<String> disabledModules = Arrays.asList(Database.getDisabledModules(event.getGuild().getIdLong()));
         for (Module module : modules) {
             if(module.triggers().stream().anyMatch(s -> s.trigger.equals(msg_trigger))){
-                if(disabledModules.contains(module))
-                    break;
-                module.onMessage(event, msg_trigger);
+                if(disabledModules.contains(module.shortName())) {
+                    logger.trace("Trigger was found, but triggered module is disabled");
+                    return;
+                }
+                module.onMessage(event, content);
                 logger.trace("Proceeded " + module.getClass().getName());
                 return;
             }
-            logger.trace("No trigger found");
+            logger.trace("No trigger was found");
         }
-        logger.debug("End message");
+        logger.trace("End message");
     }
 }

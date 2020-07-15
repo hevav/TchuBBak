@@ -1,24 +1,25 @@
-package dev.hevav.pfbot.api;
+package dev.hevav.tchubbot.api;
 
+import com.sun.xml.internal.bind.v2.runtime.reflect.Lister;
 import net.dv8tion.jda.api.entities.*;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static dev.hevav.pfbot.translations.EmbedHelperStrings.*;
+import static dev.hevav.tchubbot.translations.EmbedHelperStrings.*;
 
 public class EmbedHelper {
+    static String botPkg = EmbedHelper.class.getPackage().getImplementationVersion();
     public static void sendEmbed(String title, String msg, TextChannel textChannel) {
         SelfUser bot = textChannel.getJDA().getSelfUser();
-        textChannel.sendMessage(new MessageEmbed(null, title, msg, EmbedType.UNKNOWN, null, 0xFFCC66, null, null, new MessageEmbed.AuthorInfo(bot.getName(), null, bot.getAvatarUrl(), null), null, new MessageEmbed.Footer("#stayhome", null, null), null, null)).complete();
+        textChannel.sendMessage(new MessageEmbed(null, title, msg, EmbedType.UNKNOWN, null, 0xFFCC66, null, null, new MessageEmbed.AuthorInfo(bot.getName(), null, bot.getAvatarUrl(), null), null, new MessageEmbed.Footer(String.format("TchuBBak (tchubbot %s)", botPkg), null, null), null, null)).complete();
     }
 
     public static void sendEmbed(String title, String msg, TextChannel textChannel, List<MessageEmbed.Field> fields) {
         SelfUser bot = textChannel.getJDA().getSelfUser();
-        textChannel.sendMessage(new MessageEmbed(null, title, msg, EmbedType.UNKNOWN, null, 0xFFCC66, null, null, new MessageEmbed.AuthorInfo(bot.getName(), null, bot.getAvatarUrl(), null), null, new MessageEmbed.Footer("#stayhome", null, null), null, fields)).complete();
+        textChannel.sendMessage(new MessageEmbed(null, title, msg, EmbedType.UNKNOWN, null, 0xFFCC66, null, null, new MessageEmbed.AuthorInfo(bot.getName(), null, bot.getAvatarUrl(), null), null, new MessageEmbed.Footer(String.format("TchuBBak (tchubbot %s)", botPkg), null, null), null, fields)).complete();
     }
     public static void sendEmbed(String trackName, String queuePos, long length, String trackUrl, String author, PlayType type, TextChannel textChannel) {
-
         Message msg = textChannel.sendMessage(new MessageEmbed(
                 trackUrl,
                 trackName,
@@ -30,7 +31,7 @@ public class EmbedHelper {
                 null,
                 new MessageEmbed.AuthorInfo(author, null, null, null),
                 null,
-                new MessageEmbed.Footer("#stayhome", null, null),
+                new MessageEmbed.Footer(String.format("TchuBBak (tchubbot %s)", botPkg), null, null),
                 null,
                 Arrays.asList(
                         new MessageEmbed.Field(Translator.translateString(trackLengthString, textChannel.getGuild()), formatTiming(length, length),true),
