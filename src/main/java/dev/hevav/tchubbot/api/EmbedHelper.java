@@ -1,6 +1,5 @@
 package dev.hevav.tchubbot.api;
 
-import com.sun.xml.internal.bind.v2.runtime.reflect.Lister;
 import net.dv8tion.jda.api.entities.*;
 
 import java.util.Arrays;
