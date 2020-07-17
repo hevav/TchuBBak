@@ -11,14 +11,15 @@ public class EmbedHelper {
     static String botPkg = EmbedHelper.class.getPackage().getImplementationVersion();
     public static void sendEmbed(String title, String msg, TextChannel textChannel) {
         SelfUser bot = textChannel.getJDA().getSelfUser();
-        textChannel.sendMessage(new MessageEmbed(null, title, msg, EmbedType.UNKNOWN, null, 0xFFCC66, null, null, new MessageEmbed.AuthorInfo(bot.getName(), null, bot.getAvatarUrl(), null), null, new MessageEmbed.Footer(String.format("TchuBBak (tchubbot %s)", botPkg), null, null), null, null)).complete();
+        textChannel.sendMessage(new MessageEmbed(null, title, msg, EmbedType.UNKNOWN, null, 0xFFCC66, null, null, new MessageEmbed.AuthorInfo(bot.getName(), null, bot.getAvatarUrl(), null), null, new MessageEmbed.Footer(String.format("%s (tchubbot %s)", bot.getName(), botPkg), null, null), null, null)).complete();
     }
 
     public static void sendEmbed(String title, String msg, TextChannel textChannel, List<MessageEmbed.Field> fields) {
         SelfUser bot = textChannel.getJDA().getSelfUser();
-        textChannel.sendMessage(new MessageEmbed(null, title, msg, EmbedType.UNKNOWN, null, 0xFFCC66, null, null, new MessageEmbed.AuthorInfo(bot.getName(), null, bot.getAvatarUrl(), null), null, new MessageEmbed.Footer(String.format("TchuBBak (tchubbot %s)", botPkg), null, null), null, fields)).complete();
+        textChannel.sendMessage(new MessageEmbed(null, title, msg, EmbedType.UNKNOWN, null, 0xFFCC66, null, null, new MessageEmbed.AuthorInfo(bot.getName(), null, bot.getAvatarUrl(), null), null, new MessageEmbed.Footer(String.format("%s (tchubbot %s)", bot.getName(), botPkg), null, null), null, fields)).complete();
     }
     public static void sendEmbed(String trackName, String queuePos, long length, String trackUrl, String author, PlayType type, TextChannel textChannel) {
+        SelfUser bot = textChannel.getJDA().getSelfUser();
         Message msg = textChannel.sendMessage(new MessageEmbed(
                 trackUrl,
                 trackName,
@@ -30,7 +31,7 @@ public class EmbedHelper {
                 null,
                 new MessageEmbed.AuthorInfo(author, null, null, null),
                 null,
-                new MessageEmbed.Footer(String.format("TchuBBak (tchubbot %s)", botPkg), null, null),
+                new MessageEmbed.Footer(String.format("%s (tchubbot %s)", bot.getName(), botPkg), null, null),
                 null,
                 Arrays.asList(
                         new MessageEmbed.Field(Translator.translateString(trackLengthString, textChannel.getGuild()), formatTiming(length, length),true),

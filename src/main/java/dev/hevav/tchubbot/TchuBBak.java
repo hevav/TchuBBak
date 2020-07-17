@@ -50,7 +50,7 @@ public class TchuBBak {
         }
         JDA api;
         try {
-            api = JDABuilder.createLight(config.bot_token).build();
+            api = JDABuilder.createDefault(config.bot_token).build();
         } catch (javax.security.auth.login.LoginException e) {
             logger.fatal("Wrong credentials", e);
             return;
@@ -60,6 +60,5 @@ public class TchuBBak {
         for(Module module : config.modules)
             module.onInit(_config);
         api.addEventListener(new Listener(_config));
-        _config = null;
     }
 }

@@ -13,6 +13,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import dev.hevav.tchubbot.api.EmbedHelper;
 import dev.hevav.tchubbot.api.Translator;
 import dev.hevav.tchubbot.api.VoiceAdapter;
+import dev.hevav.tchubbot.translations.VoiceStrings;
 import dev.hevav.tchubbot.types.LocalizedString;
 import dev.hevav.tchubbot.types.Module;
 import dev.hevav.tchubbot.types.Trigger;
@@ -238,10 +239,15 @@ public class Music implements Module {
                             event.getChannel());
                     return;
                 }
+                GuildVoiceState voiceState = event.getMember().getVoiceState();
+                assert voiceState != null;
+                if(!voiceState.inVoiceChannel()){
+                    return;
+                }
                 if (parsedText[1].startsWith("http://") || parsedText[1].startsWith("https://") || parsedText[1].startsWith("www."))
-                    loadAndPlay(event.getChannel(), parsedText[1], VoiceAdapter.getChannel(event.getGuild().getIdLong(), Objects.requireNonNull(event.getMember().getVoiceState()).getChannel()));
+                    loadAndPlay(event.getChannel(), parsedText[1], VoiceAdapter.getChannel(event.getGuild().getIdLong(), voiceState.getChannel()));
                 else
-                    youtubeSearch(String.join(" ", Arrays.copyOfRange(parsedText, 1, parsedText.length)), event.getChannel(), VoiceAdapter.getChannel(event.getGuild().getIdLong(), Objects.requireNonNull(event.getMember().getVoiceState()).getChannel()));
+                    youtubeSearch(String.join(" ", Arrays.copyOfRange(parsedText, 1, parsedText.length)), event.getChannel(), VoiceAdapter.getChannel(event.getGuild().getIdLong(), voiceState.getChannel()));
                 break;
             case "volume":
             case "v":
@@ -250,7 +256,10 @@ public class Music implements Module {
                     return;
                 }
                 try {
-                    setVolume(event.getChannel(), Integer.parseInt(parsedText[1]));
+                    int vol = Integer.parseInt(parsedText[1]);
+                    if(vol > 250)
+                        throw new Exception();
+                    setVolume(event.getChannel(), vol);
                 } catch (Exception e) {
                     logger.debug(e);
                     EmbedHelper.sendEmbed(Translator.translateString(errorMusicDescription, event.getGuild()),

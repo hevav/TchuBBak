@@ -4,10 +4,11 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.managers.AudioManager;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class VoiceAdapter {
-    public static Map<Long, VoiceChannel> voiceChannels;
+    public static Map<Long, VoiceChannel> voiceChannels = new HashMap<>();
 
     public static VoiceChannel getChannel(Long guildId, VoiceChannel fallbackVoice){
         joinChannel(fallbackVoice);
