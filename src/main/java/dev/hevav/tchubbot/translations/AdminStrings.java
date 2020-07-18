@@ -11,8 +11,8 @@ public class AdminStrings {
             null,
             null);
     public static LocalizedString adminDescription = new LocalizedString(
-            "Модерация",
-            "Moderation",
+            "Плагин модерации",
+            "Moderation plugin",
             null,
             null,
             null,

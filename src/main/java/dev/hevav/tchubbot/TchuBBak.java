@@ -18,8 +18,8 @@ import java.lang.ref.WeakReference;
  * @since 1.0
  */
 public class TchuBBak {
-
     private static final Logger logger = LogManager.getLogger("TchuBBak");
+    public static final String VERSION = "2.0.0";
 
     public static void main(String[] args) {
         Config config = new Config(args);

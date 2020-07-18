@@ -1,10 +1,7 @@
 package dev.hevav.tchubbot.api;
 
+import dev.hevav.tchubbot.modules.*;
 import dev.hevav.tchubbot.types.Module;
-import dev.hevav.tchubbot.modules.Admin;
-import dev.hevav.tchubbot.modules.Help;
-import dev.hevav.tchubbot.modules.Music;
-import dev.hevav.tchubbot.modules.Status;
 import net.dv8tion.jda.api.JDA;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,6 +18,7 @@ public class Config {
     //Modules to load globally
     public Module[] modules = new Module[]{
             new Admin(),
+            new Voice(),
             new Music(),
             new Help(),
             new Status()

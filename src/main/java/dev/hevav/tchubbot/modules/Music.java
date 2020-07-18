@@ -2,6 +2,7 @@ package dev.hevav.tchubbot.modules;
 
 import com.sedmelluq.discord.lavaplayer.demo.jda.GuildMusicManager;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
@@ -25,16 +26,21 @@ import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.util.ArrayUtils;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import sun.security.util.ArrayUtil;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.*;
 
+import static dev.hevav.tchubbot.api.VoiceAdapter.getGuildAudioPlayer;
+import static dev.hevav.tchubbot.api.VoiceAdapter.removeGuildAudioPlayer;
 import static dev.hevav.tchubbot.translations.MusicStrings.*;
+import static java.lang.Math.pow;
 
 /**
  * Music module
@@ -46,17 +52,7 @@ import static dev.hevav.tchubbot.translations.MusicStrings.*;
 public class Music implements Module {
 
     private final Logger logger = LogManager.getLogger("TchuBBak");
-    private final AudioPlayerManager playerManager;
-    private final Map<Long, GuildMusicManager> musicManagers;
     private String yt_token;
-
-
-    public Music() {
-        this.musicManagers = new HashMap<>();
-        this.playerManager = new DefaultAudioPlayerManager();
-        AudioSourceManagers.registerRemoteSources(playerManager);
-        AudioSourceManagers.registerLocalSource(playerManager);
-    }
 
     @Override
     public String shortName() {
@@ -80,7 +76,8 @@ public class Music implements Module {
                 new Trigger("r", "r <number>", removeDescription),
                 new Trigger("skip", skipDescription),
                 new Trigger("pause", pauseDescription),
-                new Trigger("leave", leaveDescription));
+                new Trigger("seek", "seek [to] <time>", seekDescription),
+                new Trigger("s", "s [to] <time>", seekDescription));
     }
 
     @Override
@@ -96,38 +93,10 @@ public class Music implements Module {
         logger.debug("Module Music was initialized");
     }
 
-    private synchronized GuildMusicManager getGuildAudioPlayer(Guild guild) {
-        GuildMusicManager musicManager = musicManagers.get(guild.getIdLong());
-
-        guild.getAudioManager().setSendingHandler(musicManager.getSendHandler());
-
-        return musicManager;
-    }
-    private synchronized GuildMusicManager getGuildAudioPlayer(Guild guild, TextChannel channel) {
-        GuildMusicManager musicManager = musicManagers.get(guild.getIdLong());
-
-        if (musicManager == null) {
-            musicManager = new GuildMusicManager(playerManager, channel);
-            musicManagers.put(guild.getIdLong(), musicManager);
-        }
-
-        guild.getAudioManager().setSendingHandler(musicManager.getSendHandler());
-
-        return musicManager;
-    }
-
-    private synchronized void removeGuildAudioPlayer(Guild guild) {
-        GuildMusicManager musicManager = musicManagers.get(guild.getIdLong());
-
-        if (musicManager != null) {
-            musicManagers.remove(guild.getIdLong());
-        }
-    }
-
     private void loadAndPlay(final TextChannel channel, final String trackUrl, final VoiceChannel voiceChannel) {
         GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild(), channel);
 
-        playerManager.loadItemOrdered(musicManager, trackUrl, new AudioLoadResultHandler() {
+        VoiceAdapter.playerManager.loadItemOrdered(musicManager, trackUrl, new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack track) {
                 int queueSize = musicManager.scheduler.queue.size();
@@ -159,14 +128,14 @@ public class Music implements Module {
             @Override
             public void loadFailed(FriendlyException exception) {
                 EmbedHelper.sendEmbed(Translator.translateString(errorMusicDescription, channel.getGuild()),
-                        exception.toString(),
+                        exception.getMessage(),
                         channel);
             }
         });
     }
 
     private void play(GuildMusicManager musicManager, AudioTrack track, VoiceChannel voiceChannel) {
-        VoiceAdapter.joinChannel(voiceChannel);
+        VoiceAdapter.joinChannel(voiceChannel, false);
         musicManager.scheduler.queue(track);
     }
 
@@ -210,7 +179,7 @@ public class Music implements Module {
         } catch (IOException e) {
             logger.debug(e);
             EmbedHelper.sendEmbed(Translator.translateString(errorMusicDescription, channel.getGuild()),
-                    e.toString().replace(yt_token, "YT_TOKEN"),
+                    e.getMessage().replace(yt_token, "YT_TOKEN"),
                     channel);
         }
         catch (IndexOutOfBoundsException e){
@@ -219,6 +188,15 @@ public class Music implements Module {
                     String.format("%s %s", Translator.translateString(error404Description, channel.getGuild()), search),
                     channel);
         }
+    }
+    
+    private long parseTime(String t){
+        String[] time = t.split(":");
+        long lenSec = 0;
+        for(int i = 0; i<time.length; i++){
+            lenSec += Integer.parseInt(time[i])*pow(60, time.length-1-i);
+        }
+        return lenSec*1000;
     }
 
     public void onMessage(GuildMessageReceivedEvent event, String[] parsedText) {
@@ -244,10 +222,11 @@ public class Music implements Module {
                 if(!voiceState.inVoiceChannel()){
                     return;
                 }
+                boolean needToRejoin = !event.getGuild().getMemberById(event.getJDA().getSelfUser().getId()).getVoiceState().inVoiceChannel();
                 if (parsedText[1].startsWith("http://") || parsedText[1].startsWith("https://") || parsedText[1].startsWith("www."))
-                    loadAndPlay(event.getChannel(), parsedText[1], VoiceAdapter.getChannel(event.getGuild().getIdLong(), voiceState.getChannel()));
+                    loadAndPlay(event.getChannel(), parsedText[1], VoiceAdapter.getChannel(event.getGuild().getIdLong(), voiceState.getChannel(), needToRejoin));
                 else
-                    youtubeSearch(String.join(" ", Arrays.copyOfRange(parsedText, 1, parsedText.length)), event.getChannel(), VoiceAdapter.getChannel(event.getGuild().getIdLong(), voiceState.getChannel()));
+                    youtubeSearch(String.join(" ", Arrays.copyOfRange(parsedText, 1, parsedText.length)), event.getChannel(), VoiceAdapter.getChannel(event.getGuild().getIdLong(), voiceState.getChannel(), needToRejoin));
                 break;
             case "volume":
             case "v":
@@ -258,12 +237,12 @@ public class Music implements Module {
                 try {
                     int vol = Integer.parseInt(parsedText[1]);
                     if(vol > 250)
-                        throw new Exception();
+                        throw new Exception("Too loud");
                     setVolume(event.getChannel(), vol);
                 } catch (Exception e) {
                     logger.debug(e);
                     EmbedHelper.sendEmbed(Translator.translateString(errorMusicDescription, event.getGuild()),
-                            e.toString(),
+                            e.getMessage(),
                             event.getChannel());
                 }
                 break;
@@ -316,6 +295,23 @@ public class Music implements Module {
                 else
                     queue.remove(queue.size()-1);
                 break;
+            case "seek":
+            case "s":
+                if(parsedText.length == 1){
+                    EmbedHelper.sendEmbed("Seek", Translator.translateString(seekDescription, event.getGuild()), event.getChannel());
+                    return;
+                }
+                GuildMusicManager player = getGuildAudioPlayer(event.getGuild());
+                AudioTrack track = player.player.getPlayingTrack();
+                long setTime = 0;
+                if(parsedText[1].toLowerCase().equals("to"))
+                    setTime = parseTime(parsedText[2]);
+                else
+                    setTime = track.getPosition() + parseTime(parsedText[1]);
+                if(setTime > track.getDuration())
+                    setTime = track.getDuration();
+                track.setPosition(setTime);
+                break;
             default:
                 logger.warn(String.format("Proceeded strange trigger %s", parsedText[0]));
                 break;
@@ -330,6 +326,8 @@ public class Music implements Module {
     private class MusicListener extends ListenerAdapter{
         @Override
         public void onMessageReactionAdd(MessageReactionAddEvent event){
+            if(Objects.requireNonNull(event.getUser()).isBot())
+                return;
             boolean notHasDJ = true;
             for (Role role : Objects.requireNonNull(event.getMember()).getRoles()){
                 logger.trace(role.getName());
@@ -339,8 +337,6 @@ public class Music implements Module {
                 }
             }
             if(notHasDJ)
-                return;
-            if(Objects.requireNonNull(event.getUser()).isBot())
                 return;
             switch (event.getReactionEmote().getEmoji()){
                 case "⏯":
@@ -362,12 +358,6 @@ public class Music implements Module {
                     return;
             }
             event.getReaction().removeReaction(event.getUser()).complete();
-        }
-
-        @Override
-        public void onGuildVoiceLeave(GuildVoiceLeaveEvent event) {
-            if(event.getMember().getUser().getId().equals(event.getJDA().getSelfUser().getId()))
-                removeGuildAudioPlayer(event.getGuild());
         }
     }
 }

@@ -1,22 +1,24 @@
 package dev.hevav.tchubbot.api;
 
+import com.sedmelluq.discord.lavaplayer.tools.PlayerLibrary;
+import dev.hevav.tchubbot.TchuBBak;
+import net.dv8tion.jda.api.JDAInfo;
 import net.dv8tion.jda.api.entities.*;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static dev.hevav.tchubbot.translations.EmbedHelperStrings.*;
+import static dev.hevav.tchubbot.translations.MusicStrings.*;
 
 public class EmbedHelper {
-    static String botPkg = EmbedHelper.class.getPackage().getImplementationVersion();
     public static void sendEmbed(String title, String msg, TextChannel textChannel) {
         SelfUser bot = textChannel.getJDA().getSelfUser();
-        textChannel.sendMessage(new MessageEmbed(null, title, msg, EmbedType.UNKNOWN, null, 0xFFCC66, null, null, new MessageEmbed.AuthorInfo(bot.getName(), null, bot.getAvatarUrl(), null), null, new MessageEmbed.Footer(String.format("%s (tchubbot %s)", bot.getName(), botPkg), null, null), null, null)).complete();
+        textChannel.sendMessage(new MessageEmbed(null, title, msg, EmbedType.UNKNOWN, null, 0x00bca3, null, null, new MessageEmbed.AuthorInfo(bot.getName(), null, bot.getAvatarUrl(), null), null, new MessageEmbed.Footer(String.format("%s (tchubbot %s, JDA %s)", bot.getName(), TchuBBak.VERSION, JDAInfo.VERSION), null, null), null, null)).complete();
     }
 
     public static void sendEmbed(String title, String msg, TextChannel textChannel, List<MessageEmbed.Field> fields) {
         SelfUser bot = textChannel.getJDA().getSelfUser();
-        textChannel.sendMessage(new MessageEmbed(null, title, msg, EmbedType.UNKNOWN, null, 0xFFCC66, null, null, new MessageEmbed.AuthorInfo(bot.getName(), null, bot.getAvatarUrl(), null), null, new MessageEmbed.Footer(String.format("%s (tchubbot %s)", bot.getName(), botPkg), null, null), null, fields)).complete();
+        textChannel.sendMessage(new MessageEmbed(null, title, msg, EmbedType.UNKNOWN, null, 0x00bca3, null, null, new MessageEmbed.AuthorInfo(bot.getName(), null, bot.getAvatarUrl(), null), null, new MessageEmbed.Footer(String.format("%s (tchubbot %s, JDA %s)", bot.getName(), TchuBBak.VERSION, JDAInfo.VERSION), null, null), null, fields)).complete();
     }
     public static void sendEmbed(String trackName, String queuePos, long length, String trackUrl, String author, PlayType type, TextChannel textChannel) {
         SelfUser bot = textChannel.getJDA().getSelfUser();
@@ -31,7 +33,7 @@ public class EmbedHelper {
                 null,
                 new MessageEmbed.AuthorInfo(author, null, null, null),
                 null,
-                new MessageEmbed.Footer(String.format("%s (tchubbot %s)", bot.getName(), botPkg), null, null),
+                new MessageEmbed.Footer(String.format("%s (tchubbot %s, lavaplayer %s)", bot.getName(), TchuBBak.VERSION, PlayerLibrary.VERSION), null, null),
                 null,
                 Arrays.asList(
                         new MessageEmbed.Field(Translator.translateString(trackLengthString, textChannel.getGuild()), formatTiming(length, length),true),

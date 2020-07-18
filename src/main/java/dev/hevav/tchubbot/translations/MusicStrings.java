@@ -11,8 +11,8 @@ public class MusicStrings {
             null,
             null);
     public static LocalizedString moduleDescription = new LocalizedString(
-            "Играйте музыку с YouTube, Soundcloud и других платформ",
-            "Play music from YouTube, SoundCloud, etc.",
+            "Плагин на музыку с YouTube, Soundcloud и т.д.",
+            "Plugin for music from YouTube, SoundCloud, etc.",
             null,
             null,
             null,
@@ -66,13 +66,6 @@ public class MusicStrings {
             null,
             null,
             null);
-    public static LocalizedString leaveDescription = new LocalizedString(
-            "Выйти с голосового чата",
-            "Leave the voice channel",
-            null,
-            null,
-            null,
-            null);
     public static LocalizedString removeDescription = new LocalizedString(
             "Удалить трек в очереди(по умолчанию последний)",
             "Remove a track from queue(last track by default)",
@@ -81,6 +74,27 @@ public class MusicStrings {
             null,
             null);
     public static LocalizedString queueDescription = new LocalizedString(
+            "Очередь",
+            "Queue",
+            null,
+            null,
+            null,
+            null);
+    public static LocalizedString seekDescription = new LocalizedString(
+            "Перемотать трек",
+            "Seek track",
+            null,
+            null,
+            null,
+            null);
+    public static LocalizedString trackLengthString = new LocalizedString(
+            "Продолжительность",
+            "Track length",
+            null,
+            null,
+            null,
+            null);
+    public static LocalizedString queuePosString = new LocalizedString(
             "Очередь",
             "Queue",
             null,

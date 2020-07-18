@@ -82,7 +82,7 @@ public class Admin implements Module {
                 catch (Exception e){
                     logger.debug("Admin exception",e);
                     EmbedHelper.sendEmbed(Translator.translateString(errorPurgeDescription, event.getGuild()),
-                            e.toString(),
+                            e.getMessage(),
                             event.getChannel());
                 }
                 break;
