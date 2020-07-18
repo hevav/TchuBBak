@@ -1,7 +1,8 @@
-package dev.hevav.pfbot.modules;
+package dev.hevav.tchubbot.modules;
 
 import com.sedmelluq.discord.lavaplayer.demo.jda.GuildMusicManager;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
@@ -10,28 +11,36 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
-import dev.hevav.pfbot.api.EmbedHelper;
-import dev.hevav.pfbot.api.LocalizedString;
-import dev.hevav.pfbot.api.Module;
-import dev.hevav.pfbot.api.Trigger;
-import dev.hevav.pfbot.Boot;
-import net.dv8tion.jda.api.Region;
+import dev.hevav.tchubbot.api.EmbedHelper;
+import dev.hevav.tchubbot.api.Translator;
+import dev.hevav.tchubbot.api.VoiceAdapter;
+import dev.hevav.tchubbot.translations.VoiceStrings;
+import dev.hevav.tchubbot.types.LocalizedString;
+import dev.hevav.tchubbot.types.Module;
+import dev.hevav.tchubbot.types.Trigger;
+import dev.hevav.tchubbot.api.Config;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.managers.AudioManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.util.ArrayUtils;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import sun.security.util.ArrayUtil;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.*;
+
+import static dev.hevav.tchubbot.api.VoiceAdapter.getGuildAudioPlayer;
+import static dev.hevav.tchubbot.api.VoiceAdapter.removeGuildAudioPlayer;
+import static dev.hevav.tchubbot.translations.MusicStrings.*;
+import static java.lang.Math.pow;
 
 /**
  * Music module
@@ -42,99 +51,21 @@ import java.util.*;
  */
 public class Music implements Module {
 
-    private final Logger logger = LogManager.getLogger("PFbot");
-    private final AudioPlayerManager playerManager;
-    private final Map<Long, GuildMusicManager> musicManagers;
+    private final Logger logger = LogManager.getLogger("TchuBBak");
     private String yt_token;
 
-    private LocalizedString playDescription = new LocalizedString(
-            "Сыграть <track> или добавить очередь",
-            "Play <track> or add to queue",
-            null,
-            null,
-            null,
-            null);
-    private LocalizedString errorMusicDescription = new LocalizedString(
-            "Ошибка в музыкальном боте. Проверьте права бота или число",
-            "Music bot error. Check bot's permissions or number",
-            null,
-            null,
-            null,
-            null);
-    private LocalizedString error404Description = new LocalizedString(
-            "Ничего не найдено по запросу ",
-            "Nothing found by ",
-            null,
-            null,
-            null,
-            null);
-    private LocalizedString volumeDescription = new LocalizedString(
-            "Поставить громкость на <int>%",
-            "Set volume to <int>%",
-            null,
-            null,
-            null,
-            null);
-    private LocalizedString skipDescription = new LocalizedString(
-            "Пропустить трек",
-            "Skip track",
-            null,
-            null,
-            null,
-            null);
-    private LocalizedString stopDescription = new LocalizedString(
-            "Остановить проигрывание",
-            "Stop and clear queue",
-            null,
-            null,
-            null,
-            null);
-    private LocalizedString pauseDescription = new LocalizedString(
-            "Поставить/убрать трек с паузы",
-            "Pause/resume track",
-            null,
-            null,
-            null,
-            null);
-    private LocalizedString DJDescription = new LocalizedString(
-            "Управление доступно только DJ",
-            "Controlling is available only for DJ",
-            null,
-            null,
-            null,
-            null);
-    private LocalizedString leaveDescription = new LocalizedString(
-            "Выйти с голосового чата",
-            "Leave the voice channel",
-            null,
-            null,
-            null,
-            null);
-    private LocalizedString removeDescription = new LocalizedString(
-            "Удалить трек в очереди(по умолчанию последний)",
-            "Remove a track from queue(last track by default)",
-            null,
-            null,
-            null,
-            null);
-    private LocalizedString queueDescription = new LocalizedString(
-            "Очередь",
-            "Queue",
-            null,
-            null,
-            null,
-            null);
-
-    public Music() {
-        this.musicManagers = new HashMap<>();
-        this.playerManager = new DefaultAudioPlayerManager();
-        AudioSourceManagers.registerRemoteSources(playerManager);
-        AudioSourceManagers.registerLocalSource(playerManager);
+    @Override
+    public String shortName() {
+        return "music";
     }
 
-    public Trigger[] triggers() {
-        return new Trigger[]{
-                new Trigger("stop", stopDescription),
+    @Override
+    public LocalizedString description() {
+        return moduleDescription;
+    }
+
+    public List<Trigger> triggers() {
+        return Arrays.asList(new Trigger("stop", stopDescription),
                 new Trigger("play", "play <track>", playDescription),
                 new Trigger("p", "p <track>", playDescription),
                 new Trigger("volume", "volume <int>", volumeDescription),
@@ -145,60 +76,34 @@ public class Music implements Module {
                 new Trigger("r", "r <number>", removeDescription),
                 new Trigger("skip", skipDescription),
                 new Trigger("pause", pauseDescription),
-                new Trigger("leave", leaveDescription),
-        };
+                new Trigger("seek", "seek [to] <time>", seekDescription),
+                new Trigger("s", "s [to] <time>", seekDescription));
     }
 
-    public void onInit(WeakReference<Boot> _boot){
-        Boot boot = _boot.get();
-        assert boot != null;
-        yt_token = boot.yt_token;
-        Objects.requireNonNull(boot.api_ref.get()).addEventListener(new MusicListener());
+    @Override
+    public List<Trigger> audioTriggers() {
+        return new ArrayList<>();
+    }
+
+    public void onInit(WeakReference<Config> _boot){
+        Config config = _boot.get();
+        assert config != null;
+        yt_token = config.yt_token;
+        Objects.requireNonNull(config.api_ref.get()).addEventListener(new MusicListener());
         logger.debug("Module Music was initialized");
-    }
-
-    private synchronized GuildMusicManager getGuildAudioPlayer(Guild guild) {
-        long guildId = Long.parseLong(guild.getId());
-        GuildMusicManager musicManager = musicManagers.get(guildId);
-
-        guild.getAudioManager().setSendingHandler(musicManager.getSendHandler());
-
-        return musicManager;
-    }
-    private synchronized GuildMusicManager getGuildAudioPlayer(Guild guild, TextChannel channel) {
-        long guildId = Long.parseLong(guild.getId());
-        GuildMusicManager musicManager = musicManagers.get(guildId);
-
-        if (musicManager == null) {
-            musicManager = new GuildMusicManager(playerManager, channel);
-            musicManagers.put(guildId, musicManager);
-        }
-
-        guild.getAudioManager().setSendingHandler(musicManager.getSendHandler());
-
-        return musicManager;
-    }
-
-    private synchronized void removeGuildAudioPlayer(Guild guild) {
-        long guildId = Long.parseLong(guild.getId());
-        GuildMusicManager musicManager = musicManagers.get(guildId);
-
-        if (musicManager != null) {
-            musicManagers.remove(guildId);
-        }
     }
 
     private void loadAndPlay(final TextChannel channel, final String trackUrl, final VoiceChannel voiceChannel) {
         GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild(), channel);
 
-        playerManager.loadItemOrdered(musicManager, trackUrl, new AudioLoadResultHandler() {
+        VoiceAdapter.playerManager.loadItemOrdered(musicManager, trackUrl, new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack track) {
                 int queueSize = musicManager.scheduler.queue.size();
                 EmbedHelper.sendEmbed(track.getInfo().title, String.valueOf(queueSize),track.getDuration(), trackUrl, track.getInfo().author, EmbedHelper.PlayType.Added, channel);
-                if(queueSize == 0 && musicManager.player.getPlayingTrack() != null)
-                    EmbedHelper.sendEmbed(track.getInfo().title, String.valueOf(queueSize),track.getDuration(), trackUrl, track.getInfo().author, EmbedHelper.PlayType.Added, channel);
-                play(channel.getGuild(), musicManager, track, voiceChannel);
+                if(queueSize == 0 && musicManager.player.getPlayingTrack() == null)
+                    EmbedHelper.sendEmbed(track.getInfo().title, String.valueOf(queueSize),track.getDuration(), trackUrl, track.getInfo().author, EmbedHelper.PlayType.Playing, channel);
+                play(musicManager, track, voiceChannel);
             }
 
             @Override
@@ -212,28 +117,25 @@ public class Music implements Module {
                 EmbedHelper.sendEmbed(firstTrack.getInfo().title, "N/A", firstTrack.getDuration(), firstTrack.getInfo().uri, firstTrack.getInfo().author, EmbedHelper.PlayType.Added, channel);
 
                 for(AudioTrack track : playlist.getTracks())
-                    play(channel.getGuild(), musicManager, track, voiceChannel);
+                    play(musicManager, track, voiceChannel);
             }
 
             @Override
             public void noMatches() {
-                EmbedHelper.sendEmbed("404",error404Description.getLocalizedString(channel.getGuild().getRegion()) + trackUrl, channel);
+                EmbedHelper.sendEmbed("404", Translator.translateString(error404Description, channel.getGuild()) + trackUrl, channel);
             }
 
             @Override
             public void loadFailed(FriendlyException exception) {
-                EmbedHelper.sendEmbed(errorMusicDescription.getLocalizedString(channel.getGuild().getRegion()),
-                        exception.toString(),
+                EmbedHelper.sendEmbed(Translator.translateString(errorMusicDescription, channel.getGuild()),
+                        exception.getMessage(),
                         channel);
             }
         });
     }
 
-    private void play(Guild guild, GuildMusicManager musicManager, AudioTrack track, VoiceChannel voiceChannel) {
-        AudioManager audioManager = guild.getAudioManager();
-        if(!audioManager.isConnected() && !audioManager.isAttemptingToConnect())
-            audioManager.openAudioConnection(voiceChannel);
-
+    private void play(GuildMusicManager musicManager, AudioTrack track, VoiceChannel voiceChannel) {
+        VoiceAdapter.joinChannel(voiceChannel, false);
         musicManager.scheduler.queue(track);
     }
 
@@ -276,21 +178,28 @@ public class Music implements Module {
             loadAndPlay(channel, String.format("https://youtube.com/watch?v=%s", jsonObject), voiceChannel);
         } catch (IOException e) {
             logger.debug(e);
-            EmbedHelper.sendEmbed(errorMusicDescription.getLocalizedString(channel.getGuild().getRegion()),
-                    e.toString().replace(yt_token, "YT_TOKEN"),
+            EmbedHelper.sendEmbed(Translator.translateString(errorMusicDescription, channel.getGuild()),
+                    e.getMessage().replace(yt_token, "YT_TOKEN"),
                     channel);
         }
         catch (IndexOutOfBoundsException e){
             logger.debug(e);
-            EmbedHelper.sendEmbed(errorMusicDescription.getLocalizedString(channel.getGuild().getRegion()),
-                    String.format("%s %s", error404Description.getLocalizedString(channel.getGuild().getRegion()), search),
+            EmbedHelper.sendEmbed(Translator.translateString(errorMusicDescription, channel.getGuild()),
+                    String.format("%s %s", Translator.translateString(error404Description, channel.getGuild()), search),
                     channel);
         }
     }
+    
+    private long parseTime(String t){
+        String[] time = t.split(":");
+        long lenSec = 0;
+        for(int i = 0; i<time.length; i++){
+            lenSec += Integer.parseInt(time[i])*pow(60, time.length-1-i);
+        }
+        return lenSec*1000;
+    }
 
-    public void onMessage(GuildMessageReceivedEvent event, String trigger) {
-        String[] msg_split = event.getMessage().getContentRaw().split(" ");
-        Region region = event.getGuild().getRegion();
+    public void onMessage(GuildMessageReceivedEvent event, String[] parsedText) {
         boolean notHasDJ = true;
         for (Role role : Objects.requireNonNull(event.getMember()).getRoles()){
             logger.trace(role.getName());
@@ -299,11 +208,11 @@ public class Music implements Module {
                 break;
             }
         }
-        switch (trigger) {
+        switch (parsedText[0]) {
             case "play":
             case "p":
-                if (msg_split.length == 0) {
-                    EmbedHelper.sendEmbed(errorMusicDescription.getLocalizedString(region),
+                if (parsedText.length == 1) {
+                    EmbedHelper.sendEmbed(Translator.translateString(errorMusicDescription, event.getGuild()),
                             "Link to video is wrong",
                             event.getChannel());
                     return;
@@ -313,48 +222,56 @@ public class Music implements Module {
                 if(!voiceState.inVoiceChannel()){
                     return;
                 }
-                if (msg_split[1].startsWith("http://") || msg_split[1].startsWith("https://") || msg_split[1].startsWith("www."))
-                    loadAndPlay(event.getChannel(), msg_split[1], voiceState.getChannel());
+                boolean needToRejoin = !event.getGuild().getMemberById(event.getJDA().getSelfUser().getId()).getVoiceState().inVoiceChannel();
+                if (parsedText[1].startsWith("http://") || parsedText[1].startsWith("https://") || parsedText[1].startsWith("www."))
+                    loadAndPlay(event.getChannel(), parsedText[1], VoiceAdapter.getChannel(event.getGuild().getIdLong(), voiceState.getChannel(), needToRejoin));
                 else
-                    youtubeSearch(event.getMessage().getContentRaw().replaceFirst(msg_split[0]+" ", ""), event.getChannel(), voiceState.getChannel());
+                    youtubeSearch(String.join(" ", Arrays.copyOfRange(parsedText, 1, parsedText.length)), event.getChannel(), VoiceAdapter.getChannel(event.getGuild().getIdLong(), voiceState.getChannel(), needToRejoin));
                 break;
             case "volume":
             case "v":
                 if(notHasDJ){
-                    EmbedHelper.sendEmbed(errorMusicDescription.getLocalizedString(region), DJDescription.getLocalizedString(region), event.getChannel());
+                    EmbedHelper.sendEmbed(Translator.translateString(errorMusicDescription, event.getGuild()), Translator.translateString(DJDescription, event.getGuild()), event.getChannel());
                     return;
                 }
                 try {
-                    setVolume(event.getChannel(), Integer.parseInt(msg_split[1]));
+                    int vol = Integer.parseInt(parsedText[1]);
+                    if(vol > 250)
+                        throw new Exception("Too loud");
+                    setVolume(event.getChannel(), vol);
                 } catch (Exception e) {
                     logger.debug(e);
-                    EmbedHelper.sendEmbed(errorMusicDescription.getLocalizedString(region),
-                            e.toString(),
+                    EmbedHelper.sendEmbed(Translator.translateString(errorMusicDescription, event.getGuild()),
+                            e.getMessage(),
                             event.getChannel());
                 }
                 break;
             case "skip":
                 if(notHasDJ){
-                    EmbedHelper.sendEmbed(errorMusicDescription.getLocalizedString(region), DJDescription.getLocalizedString(region), event.getChannel());
+                    EmbedHelper.sendEmbed(Translator.translateString(errorMusicDescription, event.getGuild()), Translator.translateString(DJDescription, event.getGuild()), event.getChannel());
                     return;
                 }
                 skipTrack(event.getChannel());
                 break;
             case "stop":
                 if(notHasDJ){
-                    EmbedHelper.sendEmbed(errorMusicDescription.getLocalizedString(region), DJDescription.getLocalizedString(region), event.getChannel());
+                    EmbedHelper.sendEmbed(Translator.translateString(errorMusicDescription, event.getGuild()), Translator.translateString(DJDescription, event.getGuild()), event.getChannel());
                     return;
                 }
                 stop(event.getChannel());
                 break;
             case "pause":
                 if(notHasDJ){
-                    EmbedHelper.sendEmbed(errorMusicDescription.getLocalizedString(region), DJDescription.getLocalizedString(region), event.getChannel());
+                    EmbedHelper.sendEmbed(Translator.translateString(errorMusicDescription, event.getGuild()), Translator.translateString(DJDescription, event.getGuild()), event.getChannel());
                     return;
                 }
                 pause(event.getChannel());
                 break;
             case "leave":
+                if(notHasDJ){
+                    EmbedHelper.sendEmbed(Translator.translateString(errorMusicDescription, event.getGuild()), Translator.translateString(DJDescription, event.getGuild()), event.getChannel());
+                    return;
+                }
                 leaveVoiceChannel(event.getChannel());
                 break;
             case "queue":
@@ -368,25 +285,49 @@ public class Music implements Module {
                     if(trackQuantity == 15)
                         break;
                 }
-                EmbedHelper.sendEmbed(queueDescription.getLocalizedString(region), "", event.getChannel(), queueFields);
+                EmbedHelper.sendEmbed(Translator.translateString(queueDescription, event.getGuild()), "", event.getChannel(), queueFields);
                 break;
             case "remove":
             case "r":
                 LinkedList<AudioTrack> queue = getGuildAudioPlayer(event.getGuild()).scheduler.queue;
-                if(msg_split.length > 1)
-                    queue.remove(Integer.parseInt(msg_split[1])-1);
+                if(parsedText.length > 1)
+                    queue.remove(Integer.parseInt(parsedText[1])-1);
                 else
                     queue.remove(queue.size()-1);
                 break;
+            case "seek":
+            case "s":
+                if(parsedText.length == 1){
+                    EmbedHelper.sendEmbed("Seek", Translator.translateString(seekDescription, event.getGuild()), event.getChannel());
+                    return;
+                }
+                GuildMusicManager player = getGuildAudioPlayer(event.getGuild());
+                AudioTrack track = player.player.getPlayingTrack();
+                long setTime = 0;
+                if(parsedText[1].toLowerCase().equals("to"))
+                    setTime = parseTime(parsedText[2]);
+                else
+                    setTime = track.getPosition() + parseTime(parsedText[1]);
+                if(setTime > track.getDuration())
+                    setTime = track.getDuration();
+                track.setPosition(setTime);
+                break;
             default:
-                logger.warn(String.format("Proceeded strange trigger %s", trigger));
+                logger.warn(String.format("Proceeded strange trigger %s", parsedText[0]));
                 break;
         }
+    }
+
+    @Override
+    public void onVoice(VoiceChannel event, String trigger) {
+
     }
 
     private class MusicListener extends ListenerAdapter{
         @Override
         public void onMessageReactionAdd(MessageReactionAddEvent event){
+            if(Objects.requireNonNull(event.getUser()).isBot())
+                return;
             boolean notHasDJ = true;
             for (Role role : Objects.requireNonNull(event.getMember()).getRoles()){
                 logger.trace(role.getName());
@@ -396,8 +337,6 @@ public class Music implements Module {
                 }
             }
             if(notHasDJ)
-                return;
-            if(Objects.requireNonNull(event.getUser()).isBot())
                 return;
             switch (event.getReactionEmote().getEmoji()){
                 case "⏯":
@@ -419,12 +358,6 @@ public class Music implements Module {
                     return;
             }
             event.getReaction().removeReaction(event.getUser()).complete();
-        }
-
-        @Override
-        public void onGuildVoiceLeave(GuildVoiceLeaveEvent event) {
-            if(event.getMember().getUser().getId().equals(event.getJDA().getSelfUser().getId()))
-                removeGuildAudioPlayer(event.getGuild());
         }
     }
 }

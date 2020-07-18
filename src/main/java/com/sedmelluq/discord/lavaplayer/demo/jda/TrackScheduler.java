@@ -4,12 +4,12 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
-import dev.hevav.pfbot.api.EmbedHelper;
+import dev.hevav.tchubbot.api.EmbedHelper;
 import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.util.LinkedList;
 
-import static dev.hevav.pfbot.api.EmbedHelper.sendEmbed;
+import static dev.hevav.tchubbot.api.EmbedHelper.sendEmbed;
 
 /**
  * This class schedules tracks for the audio player. It contains the queue of tracks.
