@@ -31,6 +31,7 @@ public class Config {
     //Prefix to trigger
     public String bot_prefix;
     public String log_level;
+    public String db_string;
     public WeakReference<JDA> api_ref;
 
     private final Logger logger = LogManager.getLogger("TchuBBak");
@@ -40,6 +41,7 @@ public class Config {
         bot_token = System.getenv("pf_bot_token");
         bot_prefix = System.getenv("pf_bot_prefix");
         log_level = System.getenv("pf_log_level");
+        db_string = System.getenv("pf_db_string");
         for(String arg : args){
             String[] arg_split = arg.split("=");
             switch(arg_split[0]){
@@ -54,6 +56,9 @@ public class Config {
                     break;
                 case "yt_token":
                     yt_token = arg_split[1];
+                    break;
+                case "db_string":
+                    db_string = arg_split[1];
                     break;
                 default:
                     logger.warn(String.format("Wrong variable %s", arg_split[0]));

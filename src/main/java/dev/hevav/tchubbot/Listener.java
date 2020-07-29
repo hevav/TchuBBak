@@ -3,12 +3,19 @@ package dev.hevav.tchubbot;
 import dev.hevav.tchubbot.api.Config;
 import dev.hevav.tchubbot.api.Database;
 import dev.hevav.tchubbot.types.Module;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.events.ReadyEvent;
+import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
+import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
+import net.dv8tion.jda.api.events.guild.update.GuildUpdateIconEvent;
+import net.dv8tion.jda.api.events.guild.update.GuildUpdateNameEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -34,11 +41,13 @@ public class Listener extends ListenerAdapter {
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
         if (event.getAuthor().isBot()) return;
         String[] content = event.getMessage().getContentRaw().split(" ");
-        logger.debug("New message");
         if (!content[0].startsWith(bot_prefix)) return;
         content[0] = content[0].substring(bot_prefix.length());
         String msg_trigger = content[0];
-        List<String> disabledModules = Arrays.asList(Database.getDisabledModules(event.getGuild().getIdLong()));
+        String[] disabledModulesString = Database.getDisabledModules(event.getGuild().getIdLong());
+        List<String> disabledModules = new ArrayList<>();
+        if(disabledModulesString != null)
+            disabledModules = Arrays.asList(disabledModulesString);
         for (Module module : modules) {
             if(module.triggers().stream().anyMatch(s -> s.trigger.equals(msg_trigger))){
                 if(disabledModules.contains(module.shortName())) {
@@ -49,8 +58,37 @@ public class Listener extends ListenerAdapter {
                 logger.trace("Proceeded " + module.getClass().getName());
                 return;
             }
-            logger.trace("No trigger was found");
         }
-        logger.trace("End message");
+    }
+
+    @Override
+    public void onReady(ReadyEvent event){
+        event.getJDA().getGuilds().forEach(guild -> {
+            if(!Database.guildExist(guild.getIdLong())) {
+                logger.trace(String.format("Adding guild %s to db", guild.getId()));
+                Database.addGuild(guild.getIdLong(), guild.getName(), guild.getIconId());
+            }
+        });
+    }
+
+    @Override
+    public void onGuildJoin(GuildJoinEvent event){
+        Guild guild = event.getGuild();
+        Database.addGuild(guild.getIdLong(), guild.getName(), guild.getIconId());
+    }
+
+    @Override
+    public void onGuildLeave(GuildLeaveEvent event){
+        Database.removeGuild(event.getGuild().getIdLong());
+    }
+
+    @Override
+    public void onGuildUpdateName(GuildUpdateNameEvent event){
+        Database.setCustomString(event.getGuild().getIdLong(), "guildName", event.getNewName());
+    }
+
+    @Override
+    public void onGuildUpdateIcon(GuildUpdateIconEvent event){
+        Database.setCustomString(event.getGuild().getIdLong(), "guildPhoto", event.getNewIconId());
     }
 }

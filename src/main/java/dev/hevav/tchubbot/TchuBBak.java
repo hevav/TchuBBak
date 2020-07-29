@@ -1,6 +1,7 @@
 package dev.hevav.tchubbot;
 
 import dev.hevav.tchubbot.api.Config;
+import dev.hevav.tchubbot.api.Database;
 import dev.hevav.tchubbot.types.Module;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -10,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 
 import java.lang.ref.WeakReference;
+import java.net.UnknownHostException;
 
 /**
  * Main class
@@ -55,6 +57,7 @@ public class TchuBBak {
             logger.fatal("Wrong credentials", e);
             return;
         }
+        Database.initializeDatabase(config.db_string);
         config.api_ref = new WeakReference<>(api);
         WeakReference<Config> _config = new WeakReference<>(config);
         for(Module module : config.modules)
