@@ -56,6 +56,14 @@ public class ModerationStrings {
             null,
             null
     );
+    public static LocalizedString warnDescription = new LocalizedString(
+            "Выдать варн <member> по причине [message]",
+            "Set warn to <member> with message [message]",
+            null,
+            null,
+            null,
+            null
+    );
     public static LocalizedString unmuteDescription = new LocalizedString(
             "Размутить <member>",
             "Unmute <member>",

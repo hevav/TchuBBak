@@ -116,4 +116,8 @@ public class Database {
     public static void addInfraction(Infraction infraction){
         database.getCollection("infractions").insertOne(Document.parse(gson.toJson(infraction)));
     }
+
+    public static void removeInfraction(Infraction infraction){
+        database.getCollection("infractions").deleteOne(Document.parse(gson.toJson(infraction)));
+    }
 }

@@ -8,7 +8,6 @@ Powerful Open-Source Module-Based Music/Moderation bot for Discord. Current vers
 -   `Help` - shows help page 
 -   `Voice` - allows multiplugin voice
 -   `Music` - plays music from YouTube, SoundCloud, Twitch and more
--   `IFTTT` - plugin for "If This Then That" service
 -   `Status` - shows debug info
 
 ## Languages
@@ -22,7 +21,6 @@ TchuBBak is multilingual bot, and you can help to add more languages. Now TchuBB
 
 ## Requirements
 -   `Docker`
--   `IFTTT token`
 -   `MongoDB server`
 -   `Discord token`
 -   `YouTube Data API token`

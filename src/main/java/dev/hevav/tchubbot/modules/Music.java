@@ -351,7 +351,7 @@ public class Music implements Module {
                 default:
                     return;
             }
-            event.getReaction().removeReaction(event.getUser()).complete();
+            event.getReaction().removeReaction(event.getUser()).queue();
         }
     }
 }
