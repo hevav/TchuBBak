@@ -24,6 +24,7 @@ import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.managers.AudioManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.util.ArrayUtils;
@@ -37,8 +38,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.*;
 
-import static dev.hevav.tchubbot.api.VoiceAdapter.getGuildAudioPlayer;
-import static dev.hevav.tchubbot.api.VoiceAdapter.removeGuildAudioPlayer;
+import static dev.hevav.tchubbot.api.VoiceAdapter.*;
 import static dev.hevav.tchubbot.translations.MusicStrings.*;
 import static java.lang.Math.pow;
 
@@ -91,6 +91,16 @@ public class Music implements Module {
         yt_token = config.yt_token;
         Objects.requireNonNull(config.api_ref.get()).addEventListener(new MusicListener());
         logger.debug("Module Music was initialized");
+    }
+
+    @Override
+    public void onTick() {
+        getGuildAudioPlayers().forEach((GuildMusicManager musicManager)->{
+            AudioManager manager = musicManager.scheduler.textChannel.getGuild().getAudioManager();
+            if(manager.isConnected() && manager.getConnectedChannel().getMembers().size() == 1){
+                manager.closeAudioConnection();
+            }
+        });
     }
 
     private void loadAndPlay(final TextChannel channel, final String trackUrl, final VoiceChannel voiceChannel) {
@@ -200,14 +210,6 @@ public class Music implements Module {
     }
 
     public void onMessage(GuildMessageReceivedEvent event, String[] parsedText) {
-        boolean notHasDJ = true;
-        for (Role role : Objects.requireNonNull(event.getMember()).getRoles()){
-            logger.trace(role.getName());
-            if (role.getName().toLowerCase().contains("dj")) {
-                notHasDJ = false;
-                break;
-            }
-        }
         switch (parsedText[0]) {
             case "play":
             case "p":
@@ -230,7 +232,7 @@ public class Music implements Module {
                 break;
             case "volume":
             case "v":
-                if(notHasDJ){
+                if(!VoiceAdapter.hasDJ(event.getMember())){
                     EmbedHelper.sendEmbed(Translator.translateString(errorMusicDescription, event.getGuild()), Translator.translateString(DJDescription, event.getGuild()), event.getChannel());
                     return;
                 }
@@ -247,28 +249,28 @@ public class Music implements Module {
                 }
                 break;
             case "skip":
-                if(notHasDJ){
+                if(!VoiceAdapter.hasDJ(event.getMember())){
                     EmbedHelper.sendEmbed(Translator.translateString(errorMusicDescription, event.getGuild()), Translator.translateString(DJDescription, event.getGuild()), event.getChannel());
                     return;
                 }
                 skipTrack(event.getChannel());
                 break;
             case "stop":
-                if(notHasDJ){
+                if(!VoiceAdapter.hasDJ(event.getMember())){
                     EmbedHelper.sendEmbed(Translator.translateString(errorMusicDescription, event.getGuild()), Translator.translateString(DJDescription, event.getGuild()), event.getChannel());
                     return;
                 }
                 stop(event.getChannel());
                 break;
             case "pause":
-                if(notHasDJ){
+                if(!VoiceAdapter.hasDJ(event.getMember())){
                     EmbedHelper.sendEmbed(Translator.translateString(errorMusicDescription, event.getGuild()), Translator.translateString(DJDescription, event.getGuild()), event.getChannel());
                     return;
                 }
                 pause(event.getChannel());
                 break;
             case "leave":
-                if(notHasDJ){
+                if(!VoiceAdapter.hasDJ(event.getMember())){
                     EmbedHelper.sendEmbed(Translator.translateString(errorMusicDescription, event.getGuild()), Translator.translateString(DJDescription, event.getGuild()), event.getChannel());
                     return;
                 }
@@ -328,15 +330,7 @@ public class Music implements Module {
         public void onMessageReactionAdd(MessageReactionAddEvent event){
             if(Objects.requireNonNull(event.getUser()).isBot())
                 return;
-            boolean notHasDJ = true;
-            for (Role role : Objects.requireNonNull(event.getMember()).getRoles()){
-                logger.trace(role.getName());
-                if (role.getName().toLowerCase().contains("dj")) {
-                    notHasDJ = false;
-                    break;
-                }
-            }
-            if(notHasDJ)
+            if(VoiceAdapter.hasDJ(event.getMember()))
                 return;
             switch (event.getReactionEmote().getEmoji()){
                 case "⏯":

@@ -38,6 +38,11 @@ public class Status implements Module {
     }
 
     @Override
+    public void onTick() {
+
+    }
+
+    @Override
     public String shortName() {
         return "status";
     }

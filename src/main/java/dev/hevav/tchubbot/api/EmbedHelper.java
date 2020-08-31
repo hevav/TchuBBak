@@ -40,11 +40,11 @@ public class EmbedHelper {
                         new MessageEmbed.Field(Translator.translateString(queuePosString, textChannel.getGuild()), queuePos, true))
                 )
         ).complete();
-        msg.addReaction("⏯").complete(); //play pause
-        msg.addReaction("⏭").complete(); //skip
-        msg.addReaction("\uD83D\uDD07").complete(); //mute
-        msg.addReaction("\uD83D\uDD09").complete(); //sound
-        msg.addReaction("\uD83D\uDD0A").complete(); //loud
+        msg.addReaction("⏯").queue(); //play pause
+        msg.addReaction("⏭").queue(); //skip
+        msg.addReaction("\uD83D\uDD07").queue(); //mute
+        msg.addReaction("\uD83D\uDD09").queue(); //sound
+        msg.addReaction("\uD83D\uDD0A").queue(); //loud
     }
 
     private static String formatTiming(long timing, long maximum) {

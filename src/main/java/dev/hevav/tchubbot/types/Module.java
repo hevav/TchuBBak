@@ -60,4 +60,9 @@ public interface Module {
      * Initialize module after API was created
      */
     void onInit(WeakReference<Config> _boot);
+
+    /**
+     * Executes any operation every tick(1m)
+     */
+    void onTick();
 }

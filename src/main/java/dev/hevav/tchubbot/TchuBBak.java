@@ -2,6 +2,7 @@ package dev.hevav.tchubbot;
 
 import dev.hevav.tchubbot.api.Config;
 import dev.hevav.tchubbot.api.Database;
+import dev.hevav.tchubbot.api.TickHelper;
 import dev.hevav.tchubbot.types.Module;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -58,10 +59,12 @@ public class TchuBBak {
             return;
         }
         Database.initializeDatabase(config.db_string);
+        TickHelper tickHelper = new TickHelper(config.modules);
         config.api_ref = new WeakReference<>(api);
         WeakReference<Config> _config = new WeakReference<>(config);
         for(Module module : config.modules)
             module.onInit(_config);
         api.addEventListener(new Listener(_config));
+        tickHelper.doTicks();
     }
 }

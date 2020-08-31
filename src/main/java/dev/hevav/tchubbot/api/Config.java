@@ -17,7 +17,7 @@ import java.lang.ref.WeakReference;
 public class Config {
     //Modules to load globally
     public Module[] modules = new Module[]{
-            new Admin(),
+            new Moderation(),
             new Voice(),
             new Music(),
             new Help(),

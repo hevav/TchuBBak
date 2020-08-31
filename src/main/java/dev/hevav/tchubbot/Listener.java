@@ -65,8 +65,8 @@ public class Listener extends ListenerAdapter {
     public void onReady(ReadyEvent event){
         event.getJDA().getGuilds().forEach(guild -> {
             if(!Database.guildExist(guild.getIdLong())) {
-                logger.trace(String.format("Adding guild %s to db", guild.getId()));
-                Database.addGuild(guild.getIdLong(), guild.getName(), guild.getIconId());
+                logger.trace(String.format("Adding guild %s to db", guild.getName()));
+                Database.addGuild(guild.getIdLong());
             }
         });
     }
@@ -74,21 +74,11 @@ public class Listener extends ListenerAdapter {
     @Override
     public void onGuildJoin(GuildJoinEvent event){
         Guild guild = event.getGuild();
-        Database.addGuild(guild.getIdLong(), guild.getName(), guild.getIconId());
+        Database.addGuild(guild.getIdLong());
     }
 
     @Override
     public void onGuildLeave(GuildLeaveEvent event){
         Database.removeGuild(event.getGuild().getIdLong());
-    }
-
-    @Override
-    public void onGuildUpdateName(GuildUpdateNameEvent event){
-        Database.setCustomString(event.getGuild().getIdLong(), "guildName", event.getNewName());
-    }
-
-    @Override
-    public void onGuildUpdateIcon(GuildUpdateIconEvent event){
-        Database.setCustomString(event.getGuild().getIdLong(), "guildPhoto", event.getNewIconId());
     }
 }

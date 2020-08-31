@@ -66,7 +66,12 @@ public class Voice implements dev.hevav.tchubbot.types.Module {
         VoiceAdapter.initAdapter();
         _boot.get().api_ref.get().addEventListener(new VoiceListener());
     }
-    
+
+    @Override
+    public void onTick() {
+
+    }
+
     private class VoiceListener extends ListenerAdapter {
         @Override
         public void onGuildVoiceLeave(GuildVoiceLeaveEvent event) {

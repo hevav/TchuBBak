@@ -4,13 +4,13 @@ import com.sedmelluq.discord.lavaplayer.demo.jda.GuildMusicManager;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.managers.AudioManager;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,6 +27,9 @@ public class VoiceAdapter {
     public static VoiceChannel getChannel(Long guildId, VoiceChannel fallbackVoice, boolean reconnect){
         joinChannel(fallbackVoice, reconnect);
         return voiceChannels.get(guildId);
+    }
+    public static synchronized Collection<GuildMusicManager> getGuildAudioPlayers() {
+        return musicManagers.values();
     }
     public static synchronized GuildMusicManager getGuildAudioPlayer(Guild guild) {
         GuildMusicManager musicManager = musicManagers.get(guild.getIdLong());
@@ -60,9 +63,13 @@ public class VoiceAdapter {
     }
     
     public static boolean hasDJ(Member member){
-        if(member.hasPermission(Permission.MESSAGE_MANAGE))
-            return true;
-        return member.getRoles().stream().anyMatch(r -> r.getName().equals(Database.getCustomString(member.getGuild().getIdLong(), "djrole")));
+        //if(member.hasPermission(Permission.MESSAGE_MANAGE))
+        //    return true;
+        String djrole = Database.getCustomString(member.getGuild().getIdLong(), "djrole");
+        if(djrole == null)
+            djrole = "DJ";
+        String finalDjrole = djrole;
+        return member.getRoles().stream().anyMatch(r -> r.getName().equals(finalDjrole));
     }
 
     public static void joinChannel(VoiceChannel channel, boolean reconnect){

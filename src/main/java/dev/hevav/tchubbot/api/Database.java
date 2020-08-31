@@ -1,11 +1,18 @@
 package dev.hevav.tchubbot.api;
 
+import com.google.gson.Gson;
 import com.mongodb.*;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.util.JSON;
+import com.mongodb.util.ObjectSerializer;
+import dev.hevav.tchubbot.types.Infraction;
 import net.dv8tion.jda.api.Region;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 
-import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Class to interact with Database
@@ -15,6 +22,7 @@ import java.net.UnknownHostException;
  */
 public class Database {
     private static MongoDatabase database;
+    private static final Gson gson = new Gson();
     /**
      * Initialize Database
      *
@@ -77,12 +85,8 @@ public class Database {
         database.getCollection("guilds").findOneAndUpdate(new Document().append("guildId", guildId), object);
     }
 
-    public static void addGuild(Long guildId, String guildName, String guildPhoto){
-        Document dbObject = new Document();
-        dbObject.append("guildId", guildId);
-        dbObject.append("guildName", guildName);
-        dbObject.append("guildPhoto", guildPhoto);
-        database.getCollection("guilds").insertOne(dbObject);
+    public static void addGuild(Long guildId){
+        database.getCollection("guilds").insertOne(new Document().append("guildId", guildId));
     }
 
     public static void removeGuild(Long guildId){
@@ -91,5 +95,25 @@ public class Database {
 
     public static boolean guildExist(Long guildId){
         return database.getCollection("guilds").countDocuments(new Document().append("guildId", guildId)) > 0;
+    }
+
+    public static List<Infraction> getInfractions(Long guildId){
+        List<Infraction> infractions = new ArrayList<>();
+        database.getCollection("infractions").find(new Document().append("guildId", guildId)).forEach((Consumer<Document>) document -> {
+             infractions.add(gson.fromJson(document.toJson(), Infraction.class));
+        });
+        return infractions;
+    }
+
+    public static List<Infraction> getInfractions(){
+        List<Infraction> infractions = new ArrayList<>();
+        database.getCollection("infractions").find().forEach((Consumer<Document>) document -> {
+             infractions.add(gson.fromJson(document.toJson(), Infraction.class));
+        });
+        return infractions;
+    }
+
+    public static void addInfraction(Infraction infraction){
+        database.getCollection("infractions").insertOne(Document.parse(gson.toJson(infraction)));
     }
 }

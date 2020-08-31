@@ -62,6 +62,11 @@ public class Help implements Module {
         logger.debug("Module Help was initialized");
     }
 
+    @Override
+    public void onTick() {
+
+    }
+
     public void onMessage(GuildMessageReceivedEvent event, String[] parsedText) {
         switch (parsedText[0]) {
             case "help":
