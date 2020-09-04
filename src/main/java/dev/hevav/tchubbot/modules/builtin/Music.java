@@ -1,45 +1,36 @@
-package dev.hevav.tchubbot.modules;
+package dev.hevav.tchubbot.modules.builtin;
 
 import com.sedmelluq.discord.lavaplayer.demo.jda.GuildMusicManager;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
-import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
-import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
-import dev.hevav.tchubbot.api.EmbedHelper;
-import dev.hevav.tchubbot.api.Translator;
-import dev.hevav.tchubbot.api.VoiceAdapter;
-import dev.hevav.tchubbot.translations.VoiceStrings;
-import dev.hevav.tchubbot.types.LocalizedString;
-import dev.hevav.tchubbot.types.Module;
+import dev.hevav.tchubbot.helpers.EmbedHelper;
+import dev.hevav.tchubbot.i18n.Translator;
+import dev.hevav.tchubbot.modules.Module;
+import dev.hevav.tchubbot.voice.VoiceAdapter;
+import dev.hevav.tchubbot.i18n.LocalizedString;
 import dev.hevav.tchubbot.types.Trigger;
-import dev.hevav.tchubbot.api.Config;
+import dev.hevav.tchubbot.Config;
 import net.dv8tion.jda.api.entities.*;
-import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.managers.AudioManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.util.ArrayUtils;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import sun.security.util.ArrayUtil;
 
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.util.*;
 
-import static dev.hevav.tchubbot.api.VoiceAdapter.*;
-import static dev.hevav.tchubbot.translations.MusicStrings.*;
+import static dev.hevav.tchubbot.voice.VoiceAdapter.*;
+import static dev.hevav.tchubbot.i18n.strings.MusicStrings.*;
 import static java.lang.Math.pow;
 
 /**
@@ -49,23 +40,12 @@ import static java.lang.Math.pow;
  * @author hevav
  * @since 1.0
  */
-public class Music implements Module {
+public class Music extends Module {
 
-    private final Logger logger = LogManager.getLogger("TchuBBak");
-    private String yt_token;
-
-    @Override
-    public String shortName() {
-        return "music";
-    }
-
-    @Override
-    public LocalizedString description() {
-        return moduleDescription;
-    }
-
-    public List<Trigger> triggers() {
-        return Arrays.asList(new Trigger("stop", stopDescription),
+    public Music() {
+        super("music",
+            moduleDescription,
+            Arrays.asList(new Trigger("stop", stopDescription),
                 new Trigger("play", "play <track>", playDescription),
                 new Trigger("p", "p <track>", playDescription),
                 new Trigger("volume", "volume <int>", volumeDescription),
@@ -77,19 +57,12 @@ public class Music implements Module {
                 new Trigger("skip", skipDescription),
                 new Trigger("pause", pauseDescription),
                 new Trigger("seek", "seek [to] <time>", seekDescription),
-                new Trigger("s", "s [to] <time>", seekDescription));
+                new Trigger("s", "s [to] <time>", seekDescription)),
+            new ArrayList<>());
     }
 
-    @Override
-    public List<Trigger> audioTriggers() {
-        return new ArrayList<>();
-    }
-
-    public void onInit(WeakReference<Config> _boot){
-        Config config = _boot.get();
-        assert config != null;
-        yt_token = config.yt_token;
-        Objects.requireNonNull(config.api_ref.get()).addEventListener(new MusicListener());
+    public void onInit(){
+        Config.api.addEventListener(new MusicListener());
         logger.debug("Module Music was initialized");
     }
 
@@ -180,16 +153,16 @@ public class Music implements Module {
     }
 
     private void youtubeSearch(String search, TextChannel channel, VoiceChannel voiceChannel){
-        String url = String.format("https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=%s&key=%s", search.replace(" ", "+"), yt_token);
+        String url = String.format("https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=%s&key=%s", search.replace(" ", "+"), Config.yt_token);
         try {
-            Document doc = Jsoup.connect(url).ignoreContentType(true).timeout(10 * 1000).get();
+            Document doc = Jsoup.connect(url).ignoreContentType(true).timeout(10000).get();
             String getJson = doc.text();
             String jsonObject = (String) ((HashMap) ((HashMap) ((JSONObject) new JSONTokener(getJson).nextValue()).getJSONArray("items").toList().get(0)).get("id")).get("videoId");
             loadAndPlay(channel, String.format("https://youtube.com/watch?v=%s", jsonObject), voiceChannel);
         } catch (IOException e) {
             logger.debug(e);
             EmbedHelper.sendEmbed(Translator.translateString(errorMusicDescription, channel.getGuild()),
-                    e.getMessage().replace(yt_token, "YT_TOKEN"),
+                    e.getMessage().replace(Config.yt_token, "YT_TOKEN"),
                     channel);
         }
         catch (IndexOutOfBoundsException e){
@@ -220,7 +193,6 @@ public class Music implements Module {
                     return;
                 }
                 GuildVoiceState voiceState = event.getMember().getVoiceState();
-                assert voiceState != null;
                 if(!voiceState.inVoiceChannel()){
                     return;
                 }

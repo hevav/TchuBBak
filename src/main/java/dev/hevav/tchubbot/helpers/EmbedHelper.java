@@ -1,14 +1,15 @@
-package dev.hevav.tchubbot.api;
+package dev.hevav.tchubbot.helpers;
 
 import com.sedmelluq.discord.lavaplayer.tools.PlayerLibrary;
 import dev.hevav.tchubbot.TchuBBak;
+import dev.hevav.tchubbot.i18n.Translator;
 import net.dv8tion.jda.api.JDAInfo;
 import net.dv8tion.jda.api.entities.*;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static dev.hevav.tchubbot.translations.MusicStrings.*;
+import static dev.hevav.tchubbot.i18n.strings.MusicStrings.*;
 
 public class EmbedHelper {
     public static void sendEmbed(String title, String msg, TextChannel textChannel) {

@@ -1,6 +1,6 @@
-package dev.hevav.tchubbot.api;
+package dev.hevav.tchubbot.helpers;
 
-import dev.hevav.tchubbot.types.Module;
+import dev.hevav.tchubbot.modules.Module;
 
 public class TickHelper {
     private final Thread tickThread;

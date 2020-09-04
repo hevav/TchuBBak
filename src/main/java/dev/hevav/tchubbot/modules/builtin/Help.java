@@ -1,23 +1,20 @@
-package dev.hevav.tchubbot.modules;
+package dev.hevav.tchubbot.modules.builtin;
 
-import dev.hevav.tchubbot.api.Config;
-import dev.hevav.tchubbot.api.EmbedHelper;
-import dev.hevav.tchubbot.api.Translator;
-import dev.hevav.tchubbot.types.LocalizedString;
-import dev.hevav.tchubbot.types.Module;
+import dev.hevav.tchubbot.Config;
+import dev.hevav.tchubbot.helpers.EmbedHelper;
+import dev.hevav.tchubbot.i18n.Translator;
+import dev.hevav.tchubbot.i18n.LocalizedString;
+import dev.hevav.tchubbot.modules.Module;
 import dev.hevav.tchubbot.types.Trigger;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
-import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static dev.hevav.tchubbot.translations.HelpStrings.helpDescription;
+import static dev.hevav.tchubbot.i18n.strings.HelpStrings.helpDescription;
 
 /**
  * Help command module
@@ -25,39 +22,22 @@ import static dev.hevav.tchubbot.translations.HelpStrings.helpDescription;
  * @author hevav
  * @since 1.0
  */
-public class Help implements Module {
-    private final Logger logger = LogManager.getLogger("TchuBBak");
-    private String bot_prefix;
-    private final HashMap<String, List<Trigger>> triggers = new HashMap<>();
+public class Help extends Module {
+    private final HashMap<String, List<Trigger>> moduleTriggers = new HashMap<>();
     private final HashMap<String, LocalizedString> modules = new HashMap<>();
 
-    @Override
-    public String shortName() {
-        return "help";
+    public Help() {
+        super("help",
+                helpDescription,
+                Arrays.asList(new Trigger("help", helpDescription), new Trigger("h", helpDescription)),
+                new ArrayList<>());
     }
 
-    @Override
-    public LocalizedString description() {
-        return helpDescription;
-    }
-
-    public List<Trigger> triggers() {
-        return Arrays.asList(new Trigger("help", helpDescription), new Trigger("h", helpDescription));
-    }
-
-    @Override
-    public List<Trigger> audioTriggers() {
-        return new ArrayList<>();
-    }
-
-    public void onInit(WeakReference<Config> _boot){
-        Config config = _boot.get();
-        assert config != null;
-        Objects.requireNonNull(config.api_ref.get()).getPresence().setActivity(Activity.listening(String.format("%shelp", config.bot_prefix)));
-        bot_prefix = config.bot_prefix;
-        for (Module module : config.modules) {
-            modules.put(module.shortName(), module.description());
-            triggers.put(module.shortName(), module.triggers());
+    public void onInit(){
+        Config.api.getPresence().setActivity(Activity.listening(String.format("%shelp", Config.bot_prefix)));
+        for (Module module : Config.modules) {
+            modules.put(module.shortName, module.description);
+            moduleTriggers.put(module.shortName, module.triggers);
         }
         logger.debug("Module Help was initialized");
     }
@@ -76,7 +56,7 @@ public class Help implements Module {
                     AtomicInteger fieldCount = new AtomicInteger();
                     modules.forEach((String shortName, LocalizedString description) -> {
                         fieldCount.getAndIncrement();
-                        moduleList.add(new MessageEmbed.Field(String.format("%s%s %s", bot_prefix, parsedText[0], shortName), Translator.translateString(description, event.getGuild()), false));
+                        moduleList.add(new MessageEmbed.Field(String.format("%s%s %s", Config.bot_prefix, parsedText[0], shortName), Translator.translateString(description, event.getGuild()), false));
                         if (fieldCount.get() == 25) {
                             fieldCount.set(0);
                             moduleList.clear();
@@ -88,9 +68,9 @@ public class Help implements Module {
                 else{
                     List<MessageEmbed.Field> triggerList = new ArrayList<>();
                     int fieldCount = 0;
-                    for(Trigger trigger : triggers.get(parsedText[1])){
+                    for(Trigger trigger : moduleTriggers.get(parsedText[1])){
                         fieldCount++;
-                        triggerList.add(new MessageEmbed.Field(bot_prefix + trigger.show_trigger, Translator.translateString(trigger.description, event.getGuild()), false));
+                        triggerList.add(new MessageEmbed.Field(Config.bot_prefix + trigger.show_trigger, Translator.translateString(trigger.description, event.getGuild()), false));
                         if (fieldCount == 25) {
                             fieldCount = 0;
                             triggerList.clear();

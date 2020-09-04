@@ -21,6 +21,7 @@ TchuBBak is multilingual bot, and you can help to add more languages. Now TchuBB
 
 ## Requirements
 -   `Docker`
+-   `Vosk server`
 -   `MongoDB server`
 -   `Discord token`
 -   `YouTube Data API token`
@@ -42,7 +43,7 @@ You can set `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR` and `FATAL` log level. Def
 
 ## Writing modules
 ### Basic
--   Make a class that implements `dev.hevav.tchubbot.types.Module`
+-   Make a class that implements `dev.hevav.tchubbot.modules.Module`
 -   Add module to `Boot.modules`
 -   Profit
 ### Localization
@@ -54,9 +55,9 @@ TchuBBak has a `EmbedHelper` class, that makes modules' response in TchuBBak sty
 ## Used libraries
 -   [`log4j2`](https://github.com/apache/logging-log4j2) - Logging
 -   [`JSoup`](https://jsoup.org/) - Parsing YouTube Search
--   [`JDA`](https://github.com/Javacord/Javacord) - Discord API implementation
+-   [`JDA`](https://github.com/DV8FromTheWorld/JDA) - Discord API implementation
 -   [`lavaplayer`](https://github.com/sedmelluq/lavaplayer) - Player for Music module
  
 ## Thanks to
--   [TrainPix](https://github.com/Russia9/TrainPix)
+-   [meetinger](https://github.com/meetinger)
 -   [lavaplayer demo](https://github.com/sedmelluq/lavaplayer)

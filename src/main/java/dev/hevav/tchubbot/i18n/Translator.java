@@ -1,6 +1,6 @@
-package dev.hevav.tchubbot.api;
+package dev.hevav.tchubbot.i18n;
 
-import dev.hevav.tchubbot.types.LocalizedString;
+import dev.hevav.tchubbot.helpers.DatabaseHelper;
 import net.dv8tion.jda.api.Region;
 import net.dv8tion.jda.api.entities.Guild;
 
@@ -14,7 +14,7 @@ public class Translator {
      */
     public static String translateString(LocalizedString string, Guild guild){
         Region region = guild.getRegion();
-        Region overriddenRegion = Database.getOverriddenRegion(guild.getIdLong());
+        Region overriddenRegion = DatabaseHelper.getOverriddenRegion(guild.getIdLong());
         if(overriddenRegion != null)
             region = overriddenRegion;
         switch (region){

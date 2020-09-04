@@ -1,27 +1,22 @@
-package dev.hevav.tchubbot.modules;
+package dev.hevav.tchubbot.modules.builtin;
 
-import dev.hevav.tchubbot.api.Config;
-import dev.hevav.tchubbot.api.Database;
-import dev.hevav.tchubbot.api.EmbedHelper;
-import dev.hevav.tchubbot.api.Translator;
+import dev.hevav.tchubbot.Config;
+import dev.hevav.tchubbot.helpers.DatabaseHelper;
+import dev.hevav.tchubbot.helpers.EmbedHelper;
+import dev.hevav.tchubbot.i18n.Translator;
+import dev.hevav.tchubbot.modules.Module;
 import dev.hevav.tchubbot.types.Infraction;
-import dev.hevav.tchubbot.types.LocalizedString;
-import dev.hevav.tchubbot.types.Module;
 import dev.hevav.tchubbot.types.Trigger;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 
-import static dev.hevav.tchubbot.translations.ModerationStrings.*;
+import static dev.hevav.tchubbot.i18n.strings.ModerationStrings.*;
 
 /**
  * Admin features bot
@@ -29,52 +24,34 @@ import static dev.hevav.tchubbot.translations.ModerationStrings.*;
  * @author hevav
  * @since 1.0
  */
-public class Moderation implements Module {
+public class Moderation extends Module {
 
-    private final Logger logger = LogManager.getLogger("TchuBBak");
-    private JDA api;
-
-    public List<Trigger> triggers(){
-        return Arrays.asList(new Trigger("purge", "purge <int>", purgeDescription),
+    public Moderation() {
+        super(
+            "moder",
+            moderationDescription,
+            Arrays.asList(
+                new Trigger("purge", "purge <int>", purgeDescription),
                 new Trigger("ban", "ban <member> [time] [message]", banDescription),
                 new Trigger("mute", "mute <member> [time] [message]", muteDescription),
                 new Trigger("warn", "warn <member> [message]", warnDescription),
                 new Trigger("unmute", "unmute <member> [time] [message]", unmuteDescription),
-                new Trigger("kick", "kick <member> [time] [message]", kickDescription));
-    }
-
-    @Override
-    public String shortName() {
-        return "moder";
-    }
-
-    @Override
-    public LocalizedString description() {
-        return moderationDescription;
-    }
-
-    @Override
-    public List<Trigger> audioTriggers() {
-        return new ArrayList<>();
-    }
-
-    public void onInit(WeakReference<Config> _boot) {
-        api = _boot.get().api_ref.get();
-        logger.debug("Module Moderation was initialized");
+                new Trigger("kick", "kick <member> [time] [message]", kickDescription)),
+            new ArrayList<>());
     }
 
     @Override
     public void onTick() {
-        Database.getInfractions().forEach(infraction->{
+        DatabaseHelper.getInfractions().forEach(infraction->{
             if(infraction.lastDate <= System.currentTimeMillis()){
-                Database.removeInfraction(infraction);
+                DatabaseHelper.removeInfraction(infraction);
 
                 switch (infraction.type){
                     case BAN:
-                        api.getGuildById(infraction.guildId).unban(String.valueOf(infraction.userId)).queue();
+                        Config.api.getGuildById(infraction.guildId).unban(String.valueOf(infraction.userId)).queue();
                         break;
                     case MUTE:
-                        Guild guild = api.getGuildById(infraction.guildId);
+                        Guild guild = Config.api.getGuildById(infraction.guildId);
                         guild.removeRoleFromMember(infraction.userId, getMuteRole(guild)).queue();
                         break;
                 }
@@ -131,18 +108,18 @@ public class Moderation implements Module {
             switch (parsedText[0]){
                 case "ban":
                     event.getGuild().ban(member, 0).reason(reason).complete();
-                    Database.addInfraction(new Infraction(Infraction.InfractionType.BAN, reason, lastDate, event.getGuild().getIdLong(), member.getIdLong()));
+                    DatabaseHelper.addInfraction(new Infraction(Infraction.InfractionType.BAN, reason, lastDate, event.getGuild().getIdLong(), member.getIdLong()));
                     break;
                 case "kick":
                     event.getGuild().kick(member).reason(reason).complete();
-                    Database.addInfraction(new Infraction(Infraction.InfractionType.KICK, reason, lastDate, event.getGuild().getIdLong(), member.getIdLong()));
+                    DatabaseHelper.addInfraction(new Infraction(Infraction.InfractionType.KICK, reason, lastDate, event.getGuild().getIdLong(), member.getIdLong()));
                     break;
                 case "mute":
                     event.getGuild().addRoleToMember(member, getMuteRole(event.getGuild())).complete();
-                    Database.addInfraction(new Infraction(Infraction.InfractionType.MUTE, reason, lastDate, event.getGuild().getIdLong(), member.getIdLong()));
+                    DatabaseHelper.addInfraction(new Infraction(Infraction.InfractionType.MUTE, reason, lastDate, event.getGuild().getIdLong(), member.getIdLong()));
                     break;
                 case "warn":
-                    Database.addInfraction(new Infraction(Infraction.InfractionType.WARN, reason, lastDate, event.getGuild().getIdLong(), member.getIdLong()));
+                    DatabaseHelper.addInfraction(new Infraction(Infraction.InfractionType.WARN, reason, lastDate, event.getGuild().getIdLong(), member.getIdLong()));
                     break;
                 case "unmute":
                     event.getGuild().removeRoleFromMember(member, getMuteRole(event.getGuild())).complete();
@@ -165,10 +142,10 @@ public class Moderation implements Module {
     }
 
     private static Role getMuteRole(Guild guild){
-        Role role = guild.getRoleById(Database.getCustomString(guild.getIdLong(), "muterole"));
+        Role role = guild.getRoleById(DatabaseHelper.getCustomString(guild.getIdLong(), "muterole"));
         if(role == null){
             role = guild.createRole().setName("MUTED").complete();
-            Database.setCustomString(guild.getIdLong(), "muterole", role.getId());
+            DatabaseHelper.setCustomString(guild.getIdLong(), "muterole", role.getId());
         }
         return role;
     }

@@ -1,6 +1,8 @@
 package dev.hevav.tchubbot.types;
 
 
+import dev.hevav.tchubbot.i18n.LocalizedString;
+
 /**
  * Class to represent audio triggers for loading modules
  *

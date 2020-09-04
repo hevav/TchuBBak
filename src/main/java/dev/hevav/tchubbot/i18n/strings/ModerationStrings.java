@@ -1,6 +1,6 @@
-package dev.hevav.tchubbot.translations;
+package dev.hevav.tchubbot.i18n.strings;
 
-import dev.hevav.tchubbot.types.LocalizedString;
+import dev.hevav.tchubbot.i18n.LocalizedString;
 
 public class ModerationStrings {
     public static LocalizedString noPermissions = new LocalizedString(

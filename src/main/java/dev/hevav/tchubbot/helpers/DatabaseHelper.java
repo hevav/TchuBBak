@@ -1,4 +1,4 @@
-package dev.hevav.tchubbot.api;
+package dev.hevav.tchubbot.helpers;
 
 import com.google.gson.Gson;
 import com.mongodb.*;
@@ -20,7 +20,7 @@ import java.util.function.Consumer;
  * @author hevav
  * @since 2.0.0
  */
-public class Database {
+public class DatabaseHelper {
     private static MongoDatabase database;
     private static final Gson gson = new Gson();
     /**
@@ -79,7 +79,6 @@ public class Database {
      */
     public static void setCustomString(Long guildId, String fieldName, String fieldValue){
         Document object = database.getCollection("guilds").find(new Document().append("guildId", guildId)).first();
-        assert object != null;
         object.remove(fieldName);
         object.put(fieldName, fieldValue);
         database.getCollection("guilds").findOneAndUpdate(new Document().append("guildId", guildId), object);

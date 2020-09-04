@@ -1,43 +1,28 @@
-package dev.hevav.tchubbot.modules;
+package dev.hevav.tchubbot.modules.builtin;
 
-import dev.hevav.tchubbot.api.Config;
-import dev.hevav.tchubbot.api.VoiceAdapter;
-import dev.hevav.tchubbot.types.LocalizedString;
+import dev.hevav.tchubbot.Config;
+import dev.hevav.tchubbot.modules.Module;
+import dev.hevav.tchubbot.voice.VoiceAdapter;
 import dev.hevav.tchubbot.types.Trigger;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
-import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
-import static dev.hevav.tchubbot.api.VoiceAdapter.removeGuildAudioPlayer;
-import static dev.hevav.tchubbot.translations.VoiceStrings.*;
+import static dev.hevav.tchubbot.i18n.strings.VoiceStrings.*;
 
-public class Voice implements dev.hevav.tchubbot.types.Module {
-    @Override
-    public String shortName() {
-        return "voice";
-    }
-
-    @Override
-    public LocalizedString description() {
-        return voiceDescription;
-    }
-
-    @Override
-    public List<Trigger> triggers() {
-        return Arrays.asList(new Trigger("rejoin", rejoinDesctiption),
-                new Trigger("rj", rejoinDesctiption),
-                new Trigger("leave", leaveDescription),
-                new Trigger("l", leaveDescription));
-    }
-
-    @Override
-    public List<Trigger> audioTriggers() {
-        return null;
+public class Voice extends Module {
+    public Voice() {
+        super("voice",
+                voiceDescription,
+                Arrays.asList(new Trigger("rejoin", rejoinDesctiption),
+                    new Trigger("rj", rejoinDesctiption),
+                    new Trigger("leave", leaveDescription),
+                    new Trigger("l", leaveDescription)),
+                new ArrayList<>());
     }
 
     @Override
@@ -62,9 +47,9 @@ public class Voice implements dev.hevav.tchubbot.types.Module {
     }
 
     @Override
-    public void onInit(WeakReference<Config> _boot) {
+    public void onInit() {
         VoiceAdapter.initAdapter();
-        _boot.get().api_ref.get().addEventListener(new VoiceListener());
+        Config.api.addEventListener(new VoiceListener());
     }
 
     @Override

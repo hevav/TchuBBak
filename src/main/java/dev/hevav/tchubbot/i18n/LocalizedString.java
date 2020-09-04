@@ -1,4 +1,4 @@
-package dev.hevav.tchubbot.types;
+package dev.hevav.tchubbot.i18n;
 
 /**
  * Strings localized by server's region

@@ -1,9 +1,10 @@
-package dev.hevav.tchubbot.api;
+package dev.hevav.tchubbot.voice;
 
 import com.sedmelluq.discord.lavaplayer.demo.jda.GuildMusicManager;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
+import dev.hevav.tchubbot.helpers.DatabaseHelper;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -65,7 +66,7 @@ public class VoiceAdapter {
     public static boolean hasDJ(Member member){
         //if(member.hasPermission(Permission.MESSAGE_MANAGE))
         //    return true;
-        String djrole = Database.getCustomString(member.getGuild().getIdLong(), "djrole");
+        String djrole = DatabaseHelper.getCustomString(member.getGuild().getIdLong(), "djrole");
         if(djrole == null)
             djrole = "DJ";
         String finalDjrole = djrole;
