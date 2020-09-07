@@ -4,14 +4,14 @@ Powerful Open-Source Module-Based Music/Moderation bot for Discord. Current vers
 [Rate on top.gg](https://top.gg/bot/538670331938865163)
 
 ## Current modules
--   `Moderation` - moderation features like warn, mute, ban
+-   `Moderation` - moderation features like (temp/perm) warn, mute, ban
 -   `Help` - shows help page 
--   `Voice` - allows multiplugin voice
+-   `Voice` - allows multiplugin voice, voice recognition for Russian language
 -   `Music` - plays music from YouTube, SoundCloud, Twitch and more
 -   `Status` - shows debug info
 
 ## Languages
-TchuBBak is multilingual bot, and you can help to add more languages. Now TchuBBak is translated to these languages:
+TchuBBak is multilingual bot, and you can help to add more languages(by modifying dev.hevav.tchubbot.i18n.strings). Now TchuBBak is translated to these languages:
 -   [x] Russian
 -   [x] English
 -   [ ] Brazilian
@@ -41,22 +41,35 @@ You can also use jar file from releases:
 Use `pf_log_level` env variable in docker or `log_level=` in jar.
 You can set `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR` and `FATAL` log level. Default is `INFO`. 
 
-## Writing modules
-### Basic
--   Make a class that implements `dev.hevav.tchubbot.modules.Module`
--   Add module to `Boot.modules`
+## Writing modules/plugins
+### Basic module
+-   Make a class that extends `dev.hevav.tchubbot.modules.Module`
+-   Add module to `dev.hevav.tchubbot.Config.modules`
 -   Profit
+
+### Basic plugin
+Plugins are not supported yet. 
+
 ### Localization
-TchuBBak has a `LocalizedString` class, that translates Strings by guild's region. It supports Russian, English, Brazilian, Indian, Japanese and Chinese language.
+TchuBBak has a `LocalizedString` class, which translates Strings by guild's region. It supports Russian, English, Brazilian, Indian, Japanese and Chinese language.
 
 ### Embeds
-TchuBBak has a `EmbedHelper` class, that makes modules' response in TchuBBak style.
+TchuBBak has a `EmbedHelper` class, which makes modules' response in TchuBBak style.
+
+### Voice
+TchuBBak has a `VoiceAdapter` class to change AudioHandlers (temp/perm)
+
+## Todo:
+-   Translate VoiceRecognition to other languages
 
 ## Used libraries
 -   [`log4j2`](https://github.com/apache/logging-log4j2) - Logging
 -   [`JSoup`](https://jsoup.org/) - Parsing YouTube Search
 -   [`JDA`](https://github.com/DV8FromTheWorld/JDA) - Discord API implementation
--   [`lavaplayer`](https://github.com/sedmelluq/lavaplayer) - Player for Music module
+-   [`lavaplayer`](https://github.com/sedmelluq/lavaplayer) - Player for the Music module
+-   [`mongo-java-driver`](https://github.com/mongodb/mongo-java-driver) - Bot's database
+-   [`gson`](https://github.com/google/gson) - Bot's database helper
+
  
 ## Thanks to
 -   [meetinger](https://github.com/meetinger)

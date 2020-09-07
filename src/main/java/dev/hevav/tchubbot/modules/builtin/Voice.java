@@ -5,9 +5,13 @@ import dev.hevav.tchubbot.Listener;
 import dev.hevav.tchubbot.modules.Module;
 import dev.hevav.tchubbot.voice.VoiceAdapter;
 import dev.hevav.tchubbot.types.Trigger;
+import dev.hevav.tchubbot.voice.VoiceRecognition;
+import dev.hevav.tchubbot.voice.VoiceRecognitionGuildHandler;
+import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,6 +19,8 @@ import java.util.Arrays;
 import static dev.hevav.tchubbot.i18n.strings.VoiceStrings.*;
 
 public class Voice extends Module {
+    private boolean recognitionEnabled = false;
+
     public Voice() {
         super("voice",
                 voiceDescription,
@@ -41,7 +47,12 @@ public class Voice extends Module {
                 break;
             case "sr":
                 VoiceAdapter.joinChannel(event.getMember().getVoiceState().getChannel(), false);
-                event.getGuild().getAudioManager().setReceivingHandler(Listener.getInstance());
+                VoiceAdapter.switchReceiveHandler(new VoiceRecognitionGuildHandler(event.getGuild()), event.getGuild());
+                recognitionEnabled = true;
+                break;
+            case "stopr":
+                VoiceAdapter.returnReceiveHandler(event.getGuild());
+                recognitionEnabled = false;
                 break;
         }
     }
@@ -55,7 +66,16 @@ public class Voice extends Module {
     private class VoiceListener extends ListenerAdapter {
         @Override
         public void onGuildVoiceLeave(GuildVoiceLeaveEvent event) {
-            VoiceAdapter.leaveChannel(event.getGuild());
+            if(event.getMember().getIdLong() == Config.api.getSelfUser().getIdLong())
+                VoiceAdapter.leaveChannel(event.getGuild());
+            else if(recognitionEnabled)
+                VoiceRecognition.closeUserVoiceRecognition(event.getMember().getUser());
+        }
+
+        @Override
+        public void onGuildVoiceJoin(@NotNull GuildVoiceJoinEvent event) {
+            if(recognitionEnabled)
+                VoiceRecognition.createUserVoiceRecognition(event.getMember().getUser());
         }
     } 
 }

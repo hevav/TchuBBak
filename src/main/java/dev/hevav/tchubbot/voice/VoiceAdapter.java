@@ -38,7 +38,7 @@ public class VoiceAdapter {
     public static synchronized GuildMusicManager getGuildAudioPlayer(Guild guild) {
         GuildMusicManager musicManager = musicManagers.get(guild.getIdLong());
 
-        guild.getAudioManager().setSendingHandler(musicManager.getSendHandler());
+        switchSendHandler(musicManager.getSendHandler(), guild);
 
         return musicManager;
     }
@@ -50,7 +50,7 @@ public class VoiceAdapter {
             musicManagers.put(guild.getIdLong(), musicManager);
         }
 
-        guild.getAudioManager().setSendingHandler(musicManager.getSendHandler());
+        switchSendHandler(musicManager.getSendHandler(), guild);
 
         return musicManager;
     }

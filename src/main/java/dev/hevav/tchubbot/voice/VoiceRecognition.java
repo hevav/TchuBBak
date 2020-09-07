@@ -5,6 +5,7 @@ import com.neovisionaries.ws.client.WebSocketAdapter;
 import com.neovisionaries.ws.client.WebSocketFactory;
 import dev.hevav.tchubbot.Config;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.User;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,31 +28,31 @@ public class VoiceRecognition {
         webSocket.connect();
     }
 
-    public static void createGuildVoiceRecognition(Guild guild){
+    public static void createUserVoiceRecognition(User user){
         try {
-            if(!wordMap.containsKey(guild.getIdLong()))
-                wordMap.put(guild.getIdLong(), new VoiceRecognition());
+            if(!wordMap.containsKey(user.getIdLong()))
+                wordMap.put(user.getIdLong(), new VoiceRecognition());
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public static List<String> recognise(Guild guild, byte[] audioBuf){
-        VoiceRecognition rec = wordMap.get(guild.getIdLong());
+    public static List<String> recognise(User user, byte[] audioBuf){
+        VoiceRecognition rec = wordMap.get(user.getIdLong());
         rec.webSocket.sendBinary(audioBuf);
         return rec.words;
     }
 
-    public static void clearWords(Guild guild){
-        VoiceRecognition rec = wordMap.get(guild.getIdLong());
+    public static void clearWords(User user){
+        VoiceRecognition rec = wordMap.get(user.getIdLong());
         rec.words.clear();
     }
 
-    public static void closeGuildVoiceRecognition(Guild guild){
-        if(wordMap.containsKey(guild.getIdLong())) {
-            VoiceRecognition rec = wordMap.get(guild.getIdLong());
+    public static void closeUserVoiceRecognition(User user){
+        if(wordMap.containsKey(user.getIdLong())) {
+            VoiceRecognition rec = wordMap.get(user.getIdLong());
             rec.webSocket.sendText("{\"eof\" : 1}");
-            wordMap.remove(guild.getIdLong());
+            wordMap.remove(user.getIdLong());
         }
     }
 }

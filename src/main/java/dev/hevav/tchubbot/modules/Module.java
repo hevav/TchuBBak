@@ -3,7 +3,7 @@ package dev.hevav.tchubbot.modules;
 import dev.hevav.tchubbot.Config;
 import dev.hevav.tchubbot.i18n.LocalizedString;
 import dev.hevav.tchubbot.types.Trigger;
-import net.dv8tion.jda.api.entities.VoiceChannel;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.apache.logging.log4j.Logger;
 
@@ -56,9 +56,9 @@ public class Module {
      * Process event for this module
      *
      * @param event event
-     * @param trigger trigger with excluded prefix
+     * @param parsedText trigger and other text
      */
-    public void onVoice(VoiceChannel event, String trigger){
+    public void onVoice(Guild event, String[] parsedText){
 
     }
 
