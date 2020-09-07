@@ -1,10 +1,10 @@
 package dev.hevav.tchubbot.modules.builtin;
 
 import dev.hevav.tchubbot.Config;
+import dev.hevav.tchubbot.Listener;
 import dev.hevav.tchubbot.modules.Module;
 import dev.hevav.tchubbot.voice.VoiceAdapter;
 import dev.hevav.tchubbot.types.Trigger;
-import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -21,7 +21,8 @@ public class Voice extends Module {
                 Arrays.asList(new Trigger("rejoin", rejoinDesctiption),
                     new Trigger("rj", rejoinDesctiption),
                     new Trigger("leave", leaveDescription),
-                    new Trigger("l", leaveDescription)),
+                    new Trigger("l", leaveDescription),
+                    new Trigger("sr", recogniseDescription)),
                 new ArrayList<>());
     }
 
@@ -38,23 +39,17 @@ public class Voice extends Module {
                 if(VoiceAdapter.hasDJ(event.getMember()))
                     event.getGuild().getAudioManager().closeAudioConnection();
                 break;
+            case "sr":
+                VoiceAdapter.joinChannel(event.getMember().getVoiceState().getChannel(), false);
+                event.getGuild().getAudioManager().setReceivingHandler(Listener.getInstance());
+                break;
         }
-    }
-
-    @Override
-    public void onVoice(VoiceChannel event, String trigger) {
-
     }
 
     @Override
     public void onInit() {
         VoiceAdapter.initAdapter();
         Config.api.addEventListener(new VoiceListener());
-    }
-
-    @Override
-    public void onTick() {
-
     }
 
     private class VoiceListener extends ListenerAdapter {

@@ -5,7 +5,6 @@ import dev.hevav.tchubbot.helpers.EmbedHelper;
 import dev.hevav.tchubbot.i18n.Translator;
 import dev.hevav.tchubbot.modules.Module;
 import dev.hevav.tchubbot.types.Trigger;
-import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;

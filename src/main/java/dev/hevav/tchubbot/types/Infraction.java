@@ -18,5 +18,7 @@ public class Infraction {
         this.type = type;
         this.reason = reason;
         this.lastDate = lastDate;
+        this.guildId = guildId;
+        this.userId = userId;
     }
 }

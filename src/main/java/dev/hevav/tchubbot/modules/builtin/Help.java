@@ -42,11 +42,6 @@ public class Help extends Module {
         logger.debug("Module Help was initialized");
     }
 
-    @Override
-    public void onTick() {
-
-    }
-
     public void onMessage(GuildMessageReceivedEvent event, String[] parsedText) {
         switch (parsedText[0]) {
             case "help":
@@ -84,10 +79,5 @@ public class Help extends Module {
                 logger.warn(String.format("Proceeded strange trigger %s", parsedText[0]));
                 break;
         }
-    }
-
-    @Override
-    public void onVoice(VoiceChannel event, String trigger) {
-
     }
 }

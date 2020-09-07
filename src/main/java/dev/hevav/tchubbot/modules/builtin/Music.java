@@ -11,7 +11,6 @@ import dev.hevav.tchubbot.helpers.EmbedHelper;
 import dev.hevav.tchubbot.i18n.Translator;
 import dev.hevav.tchubbot.modules.Module;
 import dev.hevav.tchubbot.voice.VoiceAdapter;
-import dev.hevav.tchubbot.i18n.LocalizedString;
 import dev.hevav.tchubbot.types.Trigger;
 import dev.hevav.tchubbot.Config;
 import net.dv8tion.jda.api.entities.*;
@@ -19,8 +18,6 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.managers.AudioManager;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.jsoup.Jsoup;
@@ -290,11 +287,6 @@ public class Music extends Module {
                 logger.warn(String.format("Proceeded strange trigger %s", parsedText[0]));
                 break;
         }
-    }
-
-    @Override
-    public void onVoice(VoiceChannel event, String trigger) {
-
     }
 
     private class MusicListener extends ListenerAdapter{

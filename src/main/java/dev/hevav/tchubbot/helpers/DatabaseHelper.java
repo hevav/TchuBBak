@@ -3,12 +3,9 @@ package dev.hevav.tchubbot.helpers;
 import com.google.gson.Gson;
 import com.mongodb.*;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.util.JSON;
-import com.mongodb.util.ObjectSerializer;
 import dev.hevav.tchubbot.types.Infraction;
 import net.dv8tion.jda.api.Region;
 import org.bson.Document;
-import org.bson.conversions.Bson;
 
 import java.util.ArrayList;
 import java.util.List;

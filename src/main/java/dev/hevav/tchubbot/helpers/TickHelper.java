@@ -2,6 +2,12 @@ package dev.hevav.tchubbot.helpers;
 
 import dev.hevav.tchubbot.modules.Module;
 
+/**
+ * Class to do per tick tasks
+ *
+ * @author hevav
+ * @since 2.0.0
+ */
 public class TickHelper {
     private final Thread tickThread;
 

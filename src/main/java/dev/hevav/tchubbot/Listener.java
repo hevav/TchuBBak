@@ -2,13 +2,14 @@ package dev.hevav.tchubbot;
 
 import dev.hevav.tchubbot.helpers.DatabaseHelper;
 import dev.hevav.tchubbot.modules.Module;
+import net.dv8tion.jda.api.audio.AudioReceiveHandler;
+import net.dv8tion.jda.api.audio.UserAudio;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
@@ -21,8 +22,17 @@ import java.util.List;
  * @author hevav
  * @since 1.0
  */
-public class Listener extends ListenerAdapter {
+public class Listener extends ListenerAdapter implements AudioReceiveHandler {
     private static final Logger logger = Config.logger;
+    private static Listener instance;
+
+    public static Listener getInstance(){
+        return instance;
+    }
+
+    public Listener(){
+        instance = this;
+    }
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
@@ -67,5 +77,10 @@ public class Listener extends ListenerAdapter {
     @Override
     public void onGuildLeave(GuildLeaveEvent event){
         DatabaseHelper.removeGuild(event.getGuild().getIdLong());
+    }
+
+    @Override
+    public void handleUserAudio(UserAudio audio){
+
     }
 }

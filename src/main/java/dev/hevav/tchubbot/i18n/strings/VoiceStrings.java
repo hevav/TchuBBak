@@ -24,4 +24,11 @@ public class VoiceStrings {
             null,
             null,
             null);
+    public static LocalizedString recogniseDescription = new LocalizedString(
+            "Запустить распознавание голоса",
+            null,
+            null,
+            null,
+            null,
+            null);
 }
