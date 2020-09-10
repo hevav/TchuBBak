@@ -1,23 +1,27 @@
-package dev.hevav.tchubbot.api;
+package dev.hevav.tchubbot.voice;
 
 import com.sedmelluq.discord.lavaplayer.demo.jda.GuildMusicManager;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
-import net.dv8tion.jda.api.Permission;
+import dev.hevav.tchubbot.helpers.DatabaseHelper;
+import net.dv8tion.jda.api.audio.AudioReceiveHandler;
+import net.dv8tion.jda.api.audio.AudioSendHandler;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.managers.AudioManager;
 
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
 
 public class VoiceAdapter {
-    public static Map<Long, VoiceChannel> voiceChannels = new HashMap<>();
+    public static HashMap<Long, VoiceChannel> voiceChannels = new HashMap<>();
     public static final AudioPlayerManager playerManager = new DefaultAudioPlayerManager();
-    private static final Map<Long, GuildMusicManager> musicManagers = new HashMap<>();
+    private static final HashMap<Long, GuildMusicManager> musicManagers = new HashMap<>();
+    private static final HashMap<Long, AudioReceiveHandler> prevReceiveHanlers = new HashMap<>();
+    private static final HashMap<Long, AudioSendHandler> prevSendHanlers = new HashMap<>();
     
     public static void initAdapter(){
         AudioSourceManagers.registerRemoteSources(playerManager);
@@ -28,10 +32,13 @@ public class VoiceAdapter {
         joinChannel(fallbackVoice, reconnect);
         return voiceChannels.get(guildId);
     }
+    public static synchronized Collection<GuildMusicManager> getGuildAudioPlayers() {
+        return musicManagers.values();
+    }
     public static synchronized GuildMusicManager getGuildAudioPlayer(Guild guild) {
         GuildMusicManager musicManager = musicManagers.get(guild.getIdLong());
 
-        guild.getAudioManager().setSendingHandler(musicManager.getSendHandler());
+        switchSendHandler(musicManager.getSendHandler(), guild);
 
         return musicManager;
     }
@@ -43,7 +50,7 @@ public class VoiceAdapter {
             musicManagers.put(guild.getIdLong(), musicManager);
         }
 
-        guild.getAudioManager().setSendingHandler(musicManager.getSendHandler());
+        switchSendHandler(musicManager.getSendHandler(), guild);
 
         return musicManager;
     }
@@ -60,9 +67,11 @@ public class VoiceAdapter {
     }
     
     public static boolean hasDJ(Member member){
-        if(member.hasPermission(Permission.MESSAGE_MANAGE))
-            return true;
-        return member.getRoles().stream().anyMatch(r -> r.getName().equals(Database.getCustomString(member.getGuild().getIdLong(), "djrole")));
+        String djrole = DatabaseHelper.getCustomString(member.getGuild().getIdLong(), "djrole");
+        if(djrole == null)
+            djrole = "DJ";
+        String finalDjrole = djrole;
+        return member.getRoles().stream().anyMatch(r -> r.getName().equals(finalDjrole));
     }
 
     public static void joinChannel(VoiceChannel channel, boolean reconnect){
@@ -71,12 +80,34 @@ public class VoiceAdapter {
         if(reconnect || !isConnected(guildId))
             voiceChannels.put(guildId, channel);
         AudioManager audioManager = guild.getAudioManager();
-        if(reconnect || (!audioManager.isConnected() && !audioManager.isAttemptingToConnect()))
+        if(reconnect || !audioManager.isConnected())
             audioManager.openAudioConnection(voiceChannels.get(guildId));
     }
 
     public static void leaveChannel(Guild guild){
-        if(getGuildAudioPlayer(guild) != null)
+        if(musicManagers.containsKey(guild.getIdLong()))
             removeGuildAudioPlayer(guild);
+    }
+
+    public static void switchReceiveHandler(AudioReceiveHandler handler, Guild guild){
+        AudioManager manager = guild.getAudioManager();
+        prevReceiveHanlers.put(guild.getIdLong(), manager.getReceivingHandler());
+        manager.setReceivingHandler(handler);
+    }
+
+    public static void returnReceiveHandler(Guild guild){
+        AudioManager manager = guild.getAudioManager();
+        manager.setReceivingHandler(prevReceiveHanlers.remove(guild.getIdLong()));
+    }
+
+    public static void switchSendHandler(AudioSendHandler handler, Guild guild){
+        AudioManager manager = guild.getAudioManager();
+        prevSendHanlers.put(guild.getIdLong(), manager.getSendingHandler());
+        manager.setSendingHandler(handler);
+    }
+
+    public static void returnSendHandler(Guild guild){
+        AudioManager manager = guild.getAudioManager();
+        manager.setSendingHandler(prevSendHanlers.remove(guild.getIdLong()));
     }
 }

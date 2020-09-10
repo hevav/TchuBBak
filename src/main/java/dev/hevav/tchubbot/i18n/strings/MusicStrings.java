@@ -1,6 +1,6 @@
-package dev.hevav.tchubbot.translations;
+package dev.hevav.tchubbot.i18n.strings;
 
-import dev.hevav.tchubbot.types.LocalizedString;
+import dev.hevav.tchubbot.i18n.LocalizedString;
 
 public class MusicStrings {
     public static LocalizedString playDescription = new LocalizedString(
@@ -97,6 +97,55 @@ public class MusicStrings {
     public static LocalizedString queuePosString = new LocalizedString(
             "Очередь",
             "Queue",
+            null,
+            null,
+            null,
+            null);
+    public static LocalizedString lowDescription = new LocalizedString(
+            "Тише",
+            "Lower volume",
+            null,
+            null,
+            null,
+            null);
+    public static LocalizedString loudDescription = new LocalizedString(
+            "Громче",
+            "Louder",
+            null,
+            null,
+            null,
+            null);
+    public static LocalizedString skipCommand = new LocalizedString(
+            "пропусти",
+            "skip",
+            null,
+            null,
+            null,
+            null);
+    public static LocalizedString playCommand = new LocalizedString(
+            "включи",
+            "play",
+            null,
+            null,
+            null,
+            null);
+    public static LocalizedString stopCommand = new LocalizedString(
+            "останови",
+            "stop",
+            null,
+            null,
+            null,
+            null);
+    public static LocalizedString lowCommand = new LocalizedString(
+            "тише",
+            "lower",
+            null,
+            null,
+            null,
+            null);
+    public static LocalizedString loudCommand = new LocalizedString(
+            "громче",
+            "louder",
             null,
             null,
             null,

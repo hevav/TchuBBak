@@ -1,15 +1,12 @@
 package dev.hevav.tchubbot;
 
-import dev.hevav.tchubbot.api.Config;
-import dev.hevav.tchubbot.types.Module;
+import dev.hevav.tchubbot.helpers.DatabaseHelper;
+import dev.hevav.tchubbot.helpers.TickHelper;
+import dev.hevav.tchubbot.modules.Module;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
-
-import java.lang.ref.WeakReference;
 
 /**
  * Main class
@@ -18,14 +15,13 @@ import java.lang.ref.WeakReference;
  * @since 1.0
  */
 public class TchuBBak {
-    private static final Logger logger = LogManager.getLogger("TchuBBak");
     public static final String VERSION = "2.0.0";
 
     public static void main(String[] args) {
-        Config config = new Config(args);
-        if(config.log_level == null)
-            config.log_level = "WARN";
-        switch (config.log_level) {
+        Config.fillConfig(args);
+        if(Config.log_level == null)
+            Config.log_level = "WARN";
+        switch (Config.log_level) {
             case "OFF":
                 Configurator.setLevel("TchuBBak", Level.OFF);
                 break;
@@ -50,15 +46,17 @@ public class TchuBBak {
         }
         JDA api;
         try {
-            api = JDABuilder.createDefault(config.bot_token).build();
+            api = JDABuilder.createDefault(Config.bot_token).build();
         } catch (javax.security.auth.login.LoginException e) {
-            logger.fatal("Wrong credentials", e);
+            Config.logger.fatal("Wrong credentials", e);
             return;
         }
-        config.api_ref = new WeakReference<>(api);
-        WeakReference<Config> _config = new WeakReference<>(config);
-        for(Module module : config.modules)
-            module.onInit(_config);
-        api.addEventListener(new Listener(_config));
+        DatabaseHelper.initializeDatabase(Config.db_string);
+        TickHelper tickHelper = new TickHelper(Config.modules);
+        Config.api = api;
+        for(Module module : Config.modules)
+            module.onInit();
+        api.addEventListener(new Listener());
+        tickHelper.doTicks();
     }
 }

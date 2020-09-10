@@ -1,17 +1,18 @@
 package dev.hevav.tchubbot;
 
-import dev.hevav.tchubbot.api.Config;
-import dev.hevav.tchubbot.api.Database;
-import dev.hevav.tchubbot.types.Module;
+import dev.hevav.tchubbot.helpers.DatabaseHelper;
+import dev.hevav.tchubbot.modules.Module;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.events.ReadyEvent;
+import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
+import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Loads modules by trigger
@@ -19,29 +20,23 @@ import java.util.Objects;
  * @author hevav
  * @since 1.0
  */
-public class Listener extends ListenerAdapter {
-    private final Module[] modules;
-    private final String bot_prefix;
-    private static final Logger logger = LogManager.getLogger(Listener.class.getName());
-
-    public Listener(WeakReference<Config> _boot) {
-        Config config = _boot.get();
-        modules = Objects.requireNonNull(config).modules;
-        bot_prefix = config.bot_prefix;
-    }
+public class Listener extends ListenerAdapter{
+    private static final Logger logger = Config.logger;
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
         if (event.getAuthor().isBot()) return;
         String[] content = event.getMessage().getContentRaw().split(" ");
-        logger.debug("New message");
-        if (!content[0].startsWith(bot_prefix)) return;
-        content[0] = content[0].substring(bot_prefix.length());
+        if (!content[0].startsWith(Config.bot_prefix)) return;
+        content[0] = content[0].substring(Config.bot_prefix.length());
         String msg_trigger = content[0];
-        List<String> disabledModules = Arrays.asList(Database.getDisabledModules(event.getGuild().getIdLong()));
-        for (Module module : modules) {
-            if(module.triggers().stream().anyMatch(s -> s.trigger.equals(msg_trigger))){
-                if(disabledModules.contains(module.shortName())) {
+        String[] disabledModulesString = DatabaseHelper.getDisabledModules(event.getGuild().getIdLong());
+        List<String> disabledModules = new ArrayList<>();
+        if(disabledModulesString != null)
+            disabledModules = Arrays.asList(disabledModulesString);
+        for (Module module : Config.modules) {
+            if(module.triggers.stream().anyMatch(s -> s.trigger.equals(msg_trigger))){
+                if(disabledModules.contains(module.shortName)) {
                     logger.trace("Trigger was found, but triggered module is disabled");
                     return;
                 }
@@ -49,8 +44,27 @@ public class Listener extends ListenerAdapter {
                 logger.trace("Proceeded " + module.getClass().getName());
                 return;
             }
-            logger.trace("No trigger was found");
         }
-        logger.trace("End message");
+    }
+
+    @Override
+    public void onReady(ReadyEvent event){
+        event.getJDA().getGuilds().forEach(guild -> {
+            if(!DatabaseHelper.guildExist(guild.getIdLong())) {
+                logger.trace(String.format("Adding guild %s to db", guild.getName()));
+                DatabaseHelper.addGuild(guild.getIdLong());
+            }
+        });
+    }
+
+    @Override
+    public void onGuildJoin(GuildJoinEvent event){
+        Guild guild = event.getGuild();
+        DatabaseHelper.addGuild(guild.getIdLong());
+    }
+
+    @Override
+    public void onGuildLeave(GuildLeaveEvent event){
+        DatabaseHelper.removeGuild(event.getGuild().getIdLong());
     }
 }
