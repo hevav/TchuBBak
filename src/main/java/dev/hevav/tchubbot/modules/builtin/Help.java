@@ -35,8 +35,10 @@ public class Help extends Module {
     public void onInit(){
         Config.api.getPresence().setActivity(Activity.listening(String.format("%shelp", Config.bot_prefix)));
         for (Module module : Config.modules) {
-            modules.put(module.shortName, module.description);
-            moduleTriggers.put(module.shortName, module.triggers);
+            if(module.triggers.size() > 0) {
+                modules.put(module.shortName, module.description);
+                moduleTriggers.put(module.shortName, module.triggers);
+            }
         }
         Config.logger.debug("Module Help was initialized");
     }

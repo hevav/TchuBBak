@@ -281,7 +281,7 @@ public class Music extends Module {
                 }
                 GuildMusicManager player = getGuildAudioPlayer(event.getGuild());
                 AudioTrack track = player.player.getPlayingTrack();
-                long setTime = 0;
+                long setTime;
                 if(parsedText[1].toLowerCase().equals("to"))
                     setTime = parseTime(parsedText[2]);
                 else

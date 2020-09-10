@@ -106,21 +106,51 @@ public class Moderation extends Module {
         try {
             switch (parsedText[0]){
                 case "ban":
+                    if (!Objects.requireNonNull(event.getMember()).hasPermission(Permission.BAN_MEMBERS)){
+                        EmbedHelper.sendEmbed(Translator.translateString(noPermissions, event.getGuild()),
+                                Translator.translateString(noPermissionsFull, event.getGuild()),
+                                event.getChannel());
+                        return;
+                    }
                     event.getGuild().ban(member, 0).reason(reason).complete();
                     DatabaseHelper.addInfraction(new Infraction(Infraction.InfractionType.BAN, reason, lastDate, event.getGuild().getIdLong(), member.getIdLong()));
                     break;
                 case "kick":
+                    if (!Objects.requireNonNull(event.getMember()).hasPermission(Permission.KICK_MEMBERS)){
+                        EmbedHelper.sendEmbed(Translator.translateString(noPermissions, event.getGuild()),
+                                Translator.translateString(noPermissionsFull, event.getGuild()),
+                                event.getChannel());
+                        return;
+                    }
                     event.getGuild().kick(member).reason(reason).complete();
                     DatabaseHelper.addInfraction(new Infraction(Infraction.InfractionType.KICK, reason, lastDate, event.getGuild().getIdLong(), member.getIdLong()));
                     break;
                 case "mute":
+                    if (!Objects.requireNonNull(event.getMember()).hasPermission(Permission.MANAGE_CHANNEL)){
+                        EmbedHelper.sendEmbed(Translator.translateString(noPermissions, event.getGuild()),
+                                Translator.translateString(noPermissionsFull, event.getGuild()),
+                                event.getChannel());
+                        return;
+                    }
                     event.getGuild().addRoleToMember(member, getMuteRole(event.getGuild())).complete();
                     DatabaseHelper.addInfraction(new Infraction(Infraction.InfractionType.MUTE, reason, lastDate, event.getGuild().getIdLong(), member.getIdLong()));
                     break;
                 case "warn":
+                    if (!Objects.requireNonNull(event.getMember()).hasPermission(Permission.MANAGE_CHANNEL)){
+                        EmbedHelper.sendEmbed(Translator.translateString(noPermissions, event.getGuild()),
+                                Translator.translateString(noPermissionsFull, event.getGuild()),
+                                event.getChannel());
+                        return;
+                    }
                     DatabaseHelper.addInfraction(new Infraction(Infraction.InfractionType.WARN, reason, lastDate, event.getGuild().getIdLong(), member.getIdLong()));
                     break;
                 case "unmute":
+                    if (!Objects.requireNonNull(event.getMember()).hasPermission(Permission.MANAGE_CHANNEL)){
+                        EmbedHelper.sendEmbed(Translator.translateString(noPermissions, event.getGuild()),
+                                Translator.translateString(noPermissionsFull, event.getGuild()),
+                                event.getChannel());
+                        return;
+                    }
                     event.getGuild().removeRoleFromMember(member, getMuteRole(event.getGuild())).complete();
                     break;
                 default:

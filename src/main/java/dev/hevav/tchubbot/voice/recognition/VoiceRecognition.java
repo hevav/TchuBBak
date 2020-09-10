@@ -87,11 +87,13 @@ public class VoiceRecognition {
     public static void recognize(User user, byte[] audioBuf){
         VoiceRecognition rec = wordMap.get(user.getIdLong());
 
-        try {
-            rec.latestPing = System.currentTimeMillis();
-            rec.audioBuf.write(audioBuf);
-        } catch (Exception e) {
-            Config.logger.warn(e);
+        if (rec != null){
+            try {
+                rec.latestPing = System.currentTimeMillis();
+                rec.audioBuf.write(audioBuf);
+            } catch (Exception e) {
+                Config.logger.warn(e);
+            }
         }
     }
 

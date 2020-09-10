@@ -45,4 +45,11 @@ public class VoiceStrings {
             null,
             null,
             null);
+    public static LocalizedString voiceHelpDescription = new LocalizedString(
+            "Справка для распознавания голоса",
+            "Help page for voice recognition",
+            null,
+            null,
+            null,
+            null);
 }
