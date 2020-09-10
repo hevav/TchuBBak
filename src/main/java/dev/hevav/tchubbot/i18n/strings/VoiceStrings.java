@@ -24,13 +24,25 @@ public class VoiceStrings {
             null,
             null,
             null);
-    public static LocalizedString recogniseDescription = new LocalizedString(
+    public static LocalizedString recognizeDescription = new LocalizedString(
             "Запустить распознавание голоса",
             "Запустить распознавание голоса",
             null,
             null,
             null,
             null);
-    public static String rec_start = "олег";
-    public static String rec_stop = "пожалуйста";
+    public static LocalizedString stopRecognizeDescription = new LocalizedString(
+            "Остановить распознавание голоса",
+            "Остановить распознавание голоса",
+            null,
+            null,
+            null,
+            null);
+    public static LocalizedString rec_start = new LocalizedString(
+            "алексей",
+            "michael",
+            null,
+            null,
+            null,
+            null);
 }

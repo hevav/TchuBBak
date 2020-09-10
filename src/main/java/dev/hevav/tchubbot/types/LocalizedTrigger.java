@@ -9,9 +9,9 @@ import dev.hevav.tchubbot.i18n.LocalizedString;
  * @author hevav
  * @since 2.0.0
  */
-public class AudioTrigger {
-    public String trigger;
-    public String show_trigger;
+public class LocalizedTrigger {
+    public LocalizedString trigger;
+    public LocalizedString show_trigger;
     public LocalizedString description;
 
     /**
@@ -21,7 +21,7 @@ public class AudioTrigger {
      * @param _show_trigger Trigger showed in help
      * @param _description Description showed in help
      */
-    public AudioTrigger(String _trigger, String _show_trigger, LocalizedString _description){
+    public LocalizedTrigger(LocalizedString _trigger, LocalizedString _show_trigger, LocalizedString _description){
         trigger = _trigger;
         show_trigger = _show_trigger;
         description = _description;
@@ -33,7 +33,7 @@ public class AudioTrigger {
      * @param _trigger Trigger to load bot
      * @param _description Description showed in help
      */
-    public AudioTrigger(String _trigger, LocalizedString _description){
+    public LocalizedTrigger(LocalizedString _trigger, LocalizedString _description){
         trigger = _trigger;
         show_trigger = _trigger;
         description = _description;

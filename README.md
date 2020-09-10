@@ -1,4 +1,4 @@
-# TchuBBak [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) [![Discord](https://img.shields.io/discord/577547170748563496?label=Discord)](https://discord.gg/deYQmPV) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/e6ef8e0546bc4c8d8872fcf5691a513a)](https://www.codacy.com/manual/ilinpl/TchuBBak?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=hevav/TchuBBak&amp;utm_campaign=Badge_Grade)
+# TchuBBak [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) [![Discord](https://img.shields.io/discord/577547170748563496?label=Discord)](https://discord.gg/deYQmPV)
 Powerful Open-Source Module-Based Music/Moderation bot for Discord. Current version: `v2.0.0`<br>
 [Invite bot to your server](https://discordapp.com/oauth2/authorize?client_id=538670331938865163&permissions=36990272&scope=bot)<br>
 [Rate on top.gg](https://top.gg/bot/538670331938865163)
@@ -6,7 +6,7 @@ Powerful Open-Source Module-Based Music/Moderation bot for Discord. Current vers
 ## Current modules
 -   `Moderation` - moderation features like (temp/perm) warn, mute, ban
 -   `Help` - shows help page 
--   `Voice` - allows multiplugin voice, voice recognition for Russian language
+-   `Voice` - allows multiplugin voice, voice recognition
 -   `Music` - plays music from YouTube, SoundCloud, Twitch and more
 -   `Status` - shows debug info
 
@@ -21,7 +21,7 @@ TchuBBak is multilingual bot, and you can help to add more languages(by modifyin
 
 ## Requirements
 -   `Docker`
--   `Vosk server`
+-   `Google speech-to-text API file`
 -   `MongoDB server`
 -   `Discord token`
 -   `YouTube Data API token`
@@ -30,7 +30,7 @@ TchuBBak is multilingual bot, and you can help to add more languages(by modifyin
 To run TchuBBak in production, it is recommended to use Docker.
 Just pull TchuBBak image from Docker Hub and run it with command:
 ```shell script
- $ docker run --env pf_bot_token={{Discord bot token}} --env pf_yt_token={{YouTube Data API token}} --env pf_bot_prefix={{Modules commands prefix}} hevavdev/TchuBBak:latest
+ $ docker run --env pf_bot_token={{Discord bot token}} --env pf_yt_token={{YouTube Data API token}} --env pf_bot_prefix={{Modules commands prefix}} hevavdev/pfbot:latest
 ```
 You can also use jar file from releases:
 ```shell script
@@ -60,7 +60,8 @@ TchuBBak has a `EmbedHelper` class, which makes modules' response in TchuBBak st
 TchuBBak has a `VoiceAdapter` class to change AudioHandlers (temp/perm)
 
 ## Todo:
--   Translate VoiceRecognition to other languages
+-   Remove hardcode from Module(move onMessage and onVoice to Triggers)
+-   Simplify Music module
 
 ## Used libraries
 -   [`log4j2`](https://github.com/apache/logging-log4j2) - Logging
@@ -69,6 +70,7 @@ TchuBBak has a `VoiceAdapter` class to change AudioHandlers (temp/perm)
 -   [`lavaplayer`](https://github.com/sedmelluq/lavaplayer) - Player for the Music module
 -   [`mongo-java-driver`](https://github.com/mongodb/mongo-java-driver) - Bot's database
 -   [`gson`](https://github.com/google/gson) - Bot's database helper
+-   [`google-cloud-speech`](https://cloud.google.com/speech-to-text) - For voice recognition
 
  
 ## Thanks to

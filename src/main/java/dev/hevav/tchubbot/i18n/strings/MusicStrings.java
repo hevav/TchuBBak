@@ -101,4 +101,53 @@ public class MusicStrings {
             null,
             null,
             null);
+    public static LocalizedString lowDescription = new LocalizedString(
+            "Тише",
+            "Lower volume",
+            null,
+            null,
+            null,
+            null);
+    public static LocalizedString loudDescription = new LocalizedString(
+            "Громче",
+            "Louder",
+            null,
+            null,
+            null,
+            null);
+    public static LocalizedString skipCommand = new LocalizedString(
+            "пропусти",
+            "skip",
+            null,
+            null,
+            null,
+            null);
+    public static LocalizedString playCommand = new LocalizedString(
+            "включи",
+            "play",
+            null,
+            null,
+            null,
+            null);
+    public static LocalizedString stopCommand = new LocalizedString(
+            "останови",
+            "stop",
+            null,
+            null,
+            null,
+            null);
+    public static LocalizedString lowCommand = new LocalizedString(
+            "тише",
+            "lower",
+            null,
+            null,
+            null,
+            null);
+    public static LocalizedString loudCommand = new LocalizedString(
+            "громче",
+            "louder",
+            null,
+            null,
+            null,
+            null);
 }

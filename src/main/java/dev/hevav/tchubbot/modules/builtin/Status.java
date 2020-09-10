@@ -50,7 +50,7 @@ public class Status extends Module {
                         ));
                 break;
             default:
-                logger.warn(String.format("Proceeded strange trigger %s", parsedText[0]));
+                Config.logger.warn(String.format("Proceeded strange trigger %s", parsedText[0]));
                 break;
         }
     }

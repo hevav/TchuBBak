@@ -8,7 +8,6 @@ import dev.hevav.tchubbot.modules.Module;
 import dev.hevav.tchubbot.types.Trigger;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
 import java.util.*;
@@ -39,7 +38,7 @@ public class Help extends Module {
             modules.put(module.shortName, module.description);
             moduleTriggers.put(module.shortName, module.triggers);
         }
-        logger.debug("Module Help was initialized");
+        Config.logger.debug("Module Help was initialized");
     }
 
     public void onMessage(GuildMessageReceivedEvent event, String[] parsedText) {
@@ -76,7 +75,7 @@ public class Help extends Module {
                 }
                 break;
             default:
-                logger.warn(String.format("Proceeded strange trigger %s", parsedText[0]));
+                Config.logger.warn(String.format("Proceeded strange trigger %s", parsedText[0]));
                 break;
         }
     }

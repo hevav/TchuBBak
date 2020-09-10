@@ -32,4 +32,17 @@ public class Translator {
                 return string.englishString;
         }
     }
+
+    public static String lanCodeByGuild(Guild guild){
+        Region region = guild.getRegion();
+        Region overriddenRegion = DatabaseHelper.getOverriddenRegion(guild.getIdLong());
+        if(overriddenRegion != null)
+            region = overriddenRegion;
+        switch (region){
+            case RUSSIA:
+                return "ru-RU";
+            default:
+                return "en-US";
+        }
+    }
 }

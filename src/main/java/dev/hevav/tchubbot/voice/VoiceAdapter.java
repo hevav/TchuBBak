@@ -80,12 +80,12 @@ public class VoiceAdapter {
         if(reconnect || !isConnected(guildId))
             voiceChannels.put(guildId, channel);
         AudioManager audioManager = guild.getAudioManager();
-        if(reconnect || (!audioManager.isConnected() && !audioManager.isAttemptingToConnect()))
+        if(reconnect || !audioManager.isConnected())
             audioManager.openAudioConnection(voiceChannels.get(guildId));
     }
 
     public static void leaveChannel(Guild guild){
-        if(getGuildAudioPlayer(guild) != null)
+        if(musicManagers.containsKey(guild.getIdLong()))
             removeGuildAudioPlayer(guild);
     }
 

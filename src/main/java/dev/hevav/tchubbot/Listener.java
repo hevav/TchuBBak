@@ -2,9 +2,6 @@ package dev.hevav.tchubbot;
 
 import dev.hevav.tchubbot.helpers.DatabaseHelper;
 import dev.hevav.tchubbot.modules.Module;
-import dev.hevav.tchubbot.voice.VoiceRecognition;
-import net.dv8tion.jda.api.audio.AudioReceiveHandler;
-import net.dv8tion.jda.api.audio.UserAudio;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
@@ -12,14 +9,10 @@ import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static dev.hevav.tchubbot.i18n.strings.VoiceStrings.rec_start;
-import static dev.hevav.tchubbot.i18n.strings.VoiceStrings.rec_stop;
 
 /**
  * Loads modules by trigger

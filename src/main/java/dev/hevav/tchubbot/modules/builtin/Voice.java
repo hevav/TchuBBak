@@ -1,12 +1,13 @@
 package dev.hevav.tchubbot.modules.builtin;
 
 import dev.hevav.tchubbot.Config;
-import dev.hevav.tchubbot.Listener;
 import dev.hevav.tchubbot.modules.Module;
 import dev.hevav.tchubbot.voice.VoiceAdapter;
 import dev.hevav.tchubbot.types.Trigger;
-import dev.hevav.tchubbot.voice.VoiceRecognition;
-import dev.hevav.tchubbot.voice.VoiceRecognitionGuildHandler;
+import dev.hevav.tchubbot.voice.recognition.VoiceRecognition;
+import dev.hevav.tchubbot.voice.recognition.VoiceRecognitionGuildHandler;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
@@ -28,7 +29,8 @@ public class Voice extends Module {
                     new Trigger("rj", rejoinDesctiption),
                     new Trigger("leave", leaveDescription),
                     new Trigger("l", leaveDescription),
-                    new Trigger("sr", recogniseDescription)),
+                    new Trigger("sr", recognizeDescription),
+                    new Trigger("stopr", stopRecognizeDescription)),
                 new ArrayList<>());
     }
 
@@ -46,13 +48,29 @@ public class Voice extends Module {
                     event.getGuild().getAudioManager().closeAudioConnection();
                 break;
             case "sr":
-                VoiceAdapter.joinChannel(event.getMember().getVoiceState().getChannel(), false);
-                VoiceAdapter.switchReceiveHandler(new VoiceRecognitionGuildHandler(event.getGuild()), event.getGuild());
-                recognitionEnabled = true;
+                if(!recognitionEnabled){
+                    VoiceChannel channel = event.getMember().getVoiceState().getChannel();
+                    VoiceAdapter.joinChannel(channel, false);
+                    VoiceAdapter.switchReceiveHandler(new VoiceRecognitionGuildHandler(), event.getGuild());
+                    channel.getMembers().forEach(member -> {
+                        User user = member.getUser();
+                        if(!user.isBot())
+                            VoiceRecognition.createUserVoiceRecognition(user, event.getGuild());
+                    });
+                    recognitionEnabled = true;
+                }
                 break;
             case "stopr":
-                VoiceAdapter.returnReceiveHandler(event.getGuild());
-                recognitionEnabled = false;
+                if(recognitionEnabled){
+                    VoiceChannel channel = event.getMember().getVoiceState().getChannel();
+                    VoiceAdapter.returnReceiveHandler(event.getGuild());
+                    channel.getMembers().forEach(member -> {
+                        User user = member.getUser();
+                        if(!user.isBot())
+                            VoiceRecognition.closeUserVoiceRecognition(user);
+                    });
+                    recognitionEnabled = false;
+                }
                 break;
         }
     }
@@ -75,7 +93,7 @@ public class Voice extends Module {
         @Override
         public void onGuildVoiceJoin(@NotNull GuildVoiceJoinEvent event) {
             if(recognitionEnabled)
-                VoiceRecognition.createUserVoiceRecognition(event.getMember().getUser());
+                VoiceRecognition.createUserVoiceRecognition(event.getMember().getUser(), event.getGuild());
         }
     } 
 }

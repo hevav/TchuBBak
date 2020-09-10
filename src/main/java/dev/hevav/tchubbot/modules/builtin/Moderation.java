@@ -76,13 +76,13 @@ public class Moderation extends Module {
                         int deleteCount = count%100;
                         if(deleteCount == 0)
                             deleteCount = 100;
-                        logger.trace("removing "+deleteCount+" messages");
+                        Config.logger.trace("removing "+deleteCount+" messages");
                         channel.purgeMessages(channel.getHistory().retrievePast(deleteCount).complete());
                         count -= deleteCount;
                     }
                 }
                 catch (Exception e){
-                    logger.debug("Admin exception",e);
+                    Config.logger.debug("Admin exception",e);
                     EmbedHelper.sendEmbed(Translator.translateString(errorPurgeDescription, event.getGuild()),
                             e.getMessage(),
                             event.getChannel());
@@ -124,12 +124,12 @@ public class Moderation extends Module {
                     event.getGuild().removeRoleFromMember(member, getMuteRole(event.getGuild())).complete();
                     break;
                 default:
-                    logger.warn(String.format("Proceeded strange trigger %s", parsedText[0]));
+                    Config.logger.warn(String.format("Proceeded strange trigger %s", parsedText[0]));
                     return;
             }
         }
         catch (Exception e){
-            logger.debug("Admin exception",e);
+            Config.logger.debug("Admin exception",e);
             EmbedHelper.sendEmbed(Translator.translateString(errorBanKick, event.getGuild()),
                     e.getMessage(),
                     event.getChannel());

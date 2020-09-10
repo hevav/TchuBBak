@@ -10,6 +10,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import dev.hevav.tchubbot.helpers.EmbedHelper;
 import dev.hevav.tchubbot.i18n.Translator;
 import dev.hevav.tchubbot.modules.Module;
+import dev.hevav.tchubbot.types.LocalizedTrigger;
 import dev.hevav.tchubbot.voice.VoiceAdapter;
 import dev.hevav.tchubbot.types.Trigger;
 import dev.hevav.tchubbot.Config;
@@ -42,7 +43,8 @@ public class Music extends Module {
     public Music() {
         super("music",
             moduleDescription,
-            Arrays.asList(new Trigger("stop", stopDescription),
+            Arrays.asList(
+                new Trigger("stop", stopDescription),
                 new Trigger("play", "play <track>", playDescription),
                 new Trigger("p", "p <track>", playDescription),
                 new Trigger("volume", "volume <int>", volumeDescription),
@@ -55,12 +57,17 @@ public class Music extends Module {
                 new Trigger("pause", pauseDescription),
                 new Trigger("seek", "seek [to] <time>", seekDescription),
                 new Trigger("s", "s [to] <time>", seekDescription)),
-            new ArrayList<>());
+            Arrays.asList(
+                new LocalizedTrigger(skipCommand, skipDescription),
+                new LocalizedTrigger(playCommand, playDescription),
+                new LocalizedTrigger(stopCommand, stopDescription),
+                new LocalizedTrigger(lowCommand, lowDescription),
+                new LocalizedTrigger(loudCommand, loudDescription)));
     }
 
     public void onInit(){
         Config.api.addEventListener(new MusicListener());
-        logger.debug("Module Music was initialized");
+        Config.logger.debug("Module Music was initialized");
     }
 
     @Override
@@ -119,33 +126,33 @@ public class Music extends Module {
         musicManager.scheduler.queue(track);
     }
 
-    private void skipTrack(TextChannel channel) {
-        GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
+    private void skipTrack(Guild guild) {
+        GuildMusicManager musicManager = getGuildAudioPlayer(guild);
         musicManager.scheduler.nextTrack();
     }
 
-    private void pause(TextChannel channel) {
-        GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
+    private void pause(Guild guild) {
+        GuildMusicManager musicManager = getGuildAudioPlayer(guild);
         musicManager.player.setPaused(!musicManager.player.isPaused());
     }
 
     private void leaveVoiceChannel(TextChannel channel) {
         channel.getGuild().getAudioManager().closeAudioConnection();
     }
-    private void stop(TextChannel channel) {
-        GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
+    private void stop(Guild guild) {
+        GuildMusicManager musicManager = getGuildAudioPlayer(guild);
         musicManager.scheduler.onTrackEnd(musicManager.player, null, AudioTrackEndReason.CLEANUP);
         musicManager.player.startTrack(null, false);
         musicManager.player.destroy();
-        removeGuildAudioPlayer(channel.getGuild());
+        removeGuildAudioPlayer(guild);
     }
 
-    private void setVolume(TextChannel channel, int percentage) {
-        GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
+    private void setVolume(Guild guild, int percentage) {
+        GuildMusicManager musicManager = getGuildAudioPlayer(guild);
         musicManager.player.setVolume(percentage);
     }
-    private int getVolume(TextChannel channel) {
-        GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
+    private int getVolume(Guild guild) {
+        GuildMusicManager musicManager = getGuildAudioPlayer(guild);
         return musicManager.player.getVolume();
     }
 
@@ -157,13 +164,13 @@ public class Music extends Module {
             String jsonObject = (String) ((HashMap) ((HashMap) ((JSONObject) new JSONTokener(getJson).nextValue()).getJSONArray("items").toList().get(0)).get("id")).get("videoId");
             loadAndPlay(channel, String.format("https://youtube.com/watch?v=%s", jsonObject), voiceChannel);
         } catch (IOException e) {
-            logger.debug(e);
+            Config.logger.debug(e);
             EmbedHelper.sendEmbed(Translator.translateString(errorMusicDescription, channel.getGuild()),
                     e.getMessage().replace(Config.yt_token, "YT_TOKEN"),
                     channel);
         }
         catch (IndexOutOfBoundsException e){
-            logger.debug(e);
+            Config.logger.debug(e);
             EmbedHelper.sendEmbed(Translator.translateString(errorMusicDescription, channel.getGuild()),
                     String.format("%s %s", Translator.translateString(error404Description, channel.getGuild()), search),
                     channel);
@@ -209,9 +216,9 @@ public class Music extends Module {
                     int vol = Integer.parseInt(parsedText[1]);
                     if(vol > 250)
                         throw new Exception("Too loud");
-                    setVolume(event.getChannel(), vol);
+                    setVolume(event.getChannel().getGuild(), vol);
                 } catch (Exception e) {
-                    logger.debug(e);
+                    Config.logger.debug(e);
                     EmbedHelper.sendEmbed(Translator.translateString(errorMusicDescription, event.getGuild()),
                             e.getMessage(),
                             event.getChannel());
@@ -222,21 +229,21 @@ public class Music extends Module {
                     EmbedHelper.sendEmbed(Translator.translateString(errorMusicDescription, event.getGuild()), Translator.translateString(DJDescription, event.getGuild()), event.getChannel());
                     return;
                 }
-                skipTrack(event.getChannel());
+                skipTrack(event.getGuild());
                 break;
             case "stop":
                 if(!VoiceAdapter.hasDJ(event.getMember())){
                     EmbedHelper.sendEmbed(Translator.translateString(errorMusicDescription, event.getGuild()), Translator.translateString(DJDescription, event.getGuild()), event.getChannel());
                     return;
                 }
-                stop(event.getChannel());
+                stop(event.getGuild());
                 break;
             case "pause":
                 if(!VoiceAdapter.hasDJ(event.getMember())){
                     EmbedHelper.sendEmbed(Translator.translateString(errorMusicDescription, event.getGuild()), Translator.translateString(DJDescription, event.getGuild()), event.getChannel());
                     return;
                 }
-                pause(event.getChannel());
+                pause(event.getGuild());
                 break;
             case "leave":
                 if(!VoiceAdapter.hasDJ(event.getMember())){
@@ -284,7 +291,29 @@ public class Music extends Module {
                 track.setPosition(setTime);
                 break;
             default:
-                logger.warn(String.format("Proceeded strange trigger %s", parsedText[0]));
+                Config.logger.warn(String.format("Proceeded strange trigger %s", parsedText[0]));
+                break;
+        }
+    }
+
+    public void onVoice(Member event, String[] parsedText) {
+        if(VoiceAdapter.hasDJ(event))
+            return;
+        switch (parsedText[0]){
+            case "пропусти":
+                skipTrack(event.getGuild());
+                break;
+            case "включи":
+                youtubeSearch(String.join(" ", Arrays.copyOfRange(parsedText, 1, parsedText.length)), event.getGuild().getSystemChannel(), VoiceAdapter.getChannel(event.getGuild().getIdLong(), event.getVoiceState().getChannel(), false));
+                break;
+            case "останови":
+                stop(event.getGuild());
+                break;
+            case "тише":
+                setVolume(event.getGuild(), getVolume(event.getGuild()) - 10);
+                break;
+            case "громче":
+                setVolume(event.getGuild(), getVolume(event.getGuild()) + 10);
                 break;
         }
     }
@@ -298,19 +327,19 @@ public class Music extends Module {
                 return;
             switch (event.getReactionEmote().getEmoji()){
                 case "⏯":
-                    pause(event.getTextChannel());
+                    pause(event.getGuild());
                     break;
                 case "⏭":
-                    skipTrack(event.getTextChannel());
+                    skipTrack(event.getGuild());
                     break;
                 case "\uD83D\uDD07":
-                    setVolume(event.getTextChannel(), 0);
+                    setVolume(event.getGuild(), 0);
                     break;
                 case "\uD83D\uDD09":
-                    setVolume(event.getTextChannel(), getVolume(event.getTextChannel()) - 10);
+                    setVolume(event.getGuild(), getVolume(event.getGuild()) - 10);
                     break;
                 case "\uD83D\uDD0A":
-                    setVolume(event.getTextChannel(), getVolume(event.getTextChannel()) + 10);
+                    setVolume(event.getGuild(), getVolume(event.getGuild()) + 10);
                     break;
                 default:
                     return;

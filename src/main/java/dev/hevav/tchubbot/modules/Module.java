@@ -1,11 +1,10 @@
 package dev.hevav.tchubbot.modules;
 
-import dev.hevav.tchubbot.Config;
 import dev.hevav.tchubbot.i18n.LocalizedString;
+import dev.hevav.tchubbot.types.LocalizedTrigger;
 import dev.hevav.tchubbot.types.Trigger;
-import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
-import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 
@@ -16,7 +15,6 @@ import java.util.List;
  * @since 1.0
  */
 public class Module {
-    protected final Logger logger = Config.logger;
     /**
      * Short name of module
      */
@@ -33,9 +31,9 @@ public class Module {
     /**
      * AudioTrigger to load this module
      */
-    public List<Trigger> audioTriggers;
+    public List<LocalizedTrigger> audioTriggers;
 
-    public Module(String shortName, LocalizedString description, List<Trigger> triggers, List<Trigger> audioTriggers){
+    public Module(String shortName, LocalizedString description, List<Trigger> triggers, List<LocalizedTrigger> audioTriggers){
         this.shortName = shortName;
         this.description = description;
         this.triggers = triggers;
@@ -58,7 +56,7 @@ public class Module {
      * @param event event
      * @param parsedText trigger and other text
      */
-    public void onVoice(Guild event, String[] parsedText){
+    public void onVoice(Member event, String[] parsedText){
 
     }
 

@@ -30,18 +30,17 @@ public class Config {
     public static String bot_prefix;
     public static String log_level;
     public static String db_string;
-    public static String vosk_api;
     public static JDA api;
 
-    public static final Logger logger = LogManager.getLogger("TchuBBak");
+    public static Logger logger;
 
     public static void fillConfig(String[] args){
+        logger = LogManager.getLogger("TchuBBak");
         yt_token = System.getenv("pf_yt_token");
         bot_token = System.getenv("pf_bot_token");
         bot_prefix = System.getenv("pf_bot_prefix");
         log_level = System.getenv("pf_log_level");
         db_string = System.getenv("pf_db_string");
-        vosk_api = System.getenv("pf_vosk_api");
         for(String arg : args){
             String[] arg_split = arg.split("=");
             switch(arg_split[0]){
@@ -59,9 +58,6 @@ public class Config {
                     break;
                 case "db_string":
                     db_string = arg_split[1];
-                    break;
-                case "vosk_api":
-                    vosk_api = arg_split[1];
                     break;
                 default:
                     logger.warn(String.format("Wrong variable %s", arg_split[0]));
