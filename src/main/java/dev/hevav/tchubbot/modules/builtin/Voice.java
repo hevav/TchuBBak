@@ -63,7 +63,7 @@ public class Voice extends Module {
                 if(!recognitionEnabled){
                     VoiceChannel channel = event.getMember().getVoiceState().getChannel();
                     VoiceAdapter.joinChannel(channel, false);
-                    VoiceAdapter.switchReceiveHandler(new VoiceRecognitionGuildHandler(), event.getGuild());
+                    VoiceAdapter.switchReceiveHandler(new VoiceRecognitionGuildHandler(event.getChannel()), event.getGuild());
                     channel.getMembers().forEach(member -> {
                         User user = member.getUser();
                         if(!user.isBot())

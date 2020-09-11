@@ -30,6 +30,7 @@ public class Config {
     public static String bot_prefix;
     public static String log_level;
     public static String db_string;
+    public static String tts_voice_dir;
     public static JDA api;
 
     public static Logger logger;
@@ -41,6 +42,7 @@ public class Config {
         bot_prefix = System.getenv("pf_bot_prefix");
         log_level = System.getenv("pf_log_level");
         db_string = System.getenv("pf_db_string");
+        tts_voice_dir = System.getenv("pf_tts_voice_dir");
         for(String arg : args){
             String[] arg_split = arg.split("=");
             switch(arg_split[0]){
@@ -58,6 +60,9 @@ public class Config {
                     break;
                 case "db_string":
                     db_string = arg_split[1];
+                    break;
+                case "tts_voice_dir":
+                    tts_voice_dir = arg_split[1];
                     break;
                 default:
                     logger.warn(String.format("Wrong variable %s", arg_split[0]));

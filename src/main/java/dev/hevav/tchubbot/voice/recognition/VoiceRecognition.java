@@ -7,7 +7,9 @@ import dev.hevav.tchubbot.i18n.Translator;
 import dev.hevav.tchubbot.modules.Module;
 import net.dv8tion.jda.api.audio.AudioReceiveHandler;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.managers.AudioManager;
 import org.apache.commons.io.IOUtils;
 
 import javax.sound.sampled.AudioFormat;
@@ -28,6 +30,8 @@ public class VoiceRecognition {
     private final RecognitionConfig config;
     private final ByteArrayOutputStream audioBuf = new ByteArrayOutputStream();
 
+    private final GuildChannel channel;
+
     public VoiceRecognition(Guild guild, User user) throws IOException {
         config =
             RecognitionConfig.newBuilder()
@@ -37,6 +41,10 @@ public class VoiceRecognition {
                 .build();
 
         VoiceRecognition instance = this;
+
+        AudioManager audioManager = guild.getAudioManager();
+
+        this.channel = ((VoiceRecognitionGuildHandler) audioManager.getReceivingHandler()).channel;
 
         Timer timer = new Timer();
         TimerTask timerTask = new TimerTask() {
@@ -50,7 +58,7 @@ public class VoiceRecognition {
                     }
 
                     String[] received = VoiceRecognition.getResponse(instance);
-                    if (received != null) {
+                    if (received != null && received.length > 0) {
                         int receivedInd = 0;
                         String tr_rec_start = Translator.translateString(rec_start, guild);
                         while(receivedInd < received.length-1){
@@ -63,8 +71,8 @@ public class VoiceRecognition {
                             for (String oneWord : receivedFinal)
                                 Config.logger.trace(oneWord);
                             for (Module module : Config.modules) {
-                                if (module.audioTriggers.stream().anyMatch(s -> Translator.translateString(s.trigger, guild).contains(receivedFinal[0]))) {
-                                    module.onVoice(guild.getMember(user), receivedFinal);
+                                if (module.audioTriggers.size() > 0 && module.audioTriggers.stream().anyMatch(s -> receivedFinal[0].contains(Translator.translateString(s.trigger, guild)))) {
+                                    module.onVoice(guild.getMember(user), channel, receivedFinal);
                                 }
                             }
                         }
@@ -100,7 +108,6 @@ public class VoiceRecognition {
     public static String[] getResponse(VoiceRecognition rec){
         try {
             if(rec != null){
-                Config.logger.trace("lol");
                 if(rec.audioBuf.size() < 3840*50)
                     throw new Exception("Very short phrase");
                 RecognitionAudio audio = RecognitionAudio.newBuilder().setContent(ByteString.copyFrom(fromDiscord(rec.audioBuf.toByteArray()))).build();
@@ -112,7 +119,7 @@ public class VoiceRecognition {
                 return response.getResults(0).getAlternatives(0).getTranscript().toLowerCase().split(" ");
             }
         } catch (Exception e) {
-            Config.logger.warn(e);
+            Config.logger.info(e);
         }
         return null;
     }

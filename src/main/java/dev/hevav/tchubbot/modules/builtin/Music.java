@@ -296,15 +296,15 @@ public class Music extends Module {
         }
     }
 
-    public void onVoice(Member event, String[] parsedText) {
-        if(VoiceAdapter.hasDJ(event))
+    public void onVoice(Member event, GuildChannel channel, String[] parsedText) {
+        if(!VoiceAdapter.hasDJ(event))
             return;
         switch (parsedText[0]){
             case "пропусти":
                 skipTrack(event.getGuild());
                 break;
             case "включи":
-                youtubeSearch(String.join(" ", Arrays.copyOfRange(parsedText, 1, parsedText.length)), event.getGuild().getSystemChannel(), VoiceAdapter.getChannel(event.getGuild().getIdLong(), event.getVoiceState().getChannel(), false));
+                youtubeSearch(String.join(" ", Arrays.copyOfRange(parsedText, 1, parsedText.length)), (TextChannel) channel, VoiceAdapter.getChannel(event.getGuild().getIdLong(), event.getVoiceState().getChannel(), false));
                 break;
             case "останови":
                 stop(event.getGuild());

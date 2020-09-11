@@ -3,6 +3,7 @@ package dev.hevav.tchubbot.modules;
 import dev.hevav.tchubbot.i18n.LocalizedString;
 import dev.hevav.tchubbot.types.LocalizedTrigger;
 import dev.hevav.tchubbot.types.Trigger;
+import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
@@ -56,7 +57,7 @@ public class Module {
      * @param event event
      * @param parsedText trigger and other text
      */
-    public void onVoice(Member event, String[] parsedText){
+    public void onVoice(Member event, GuildChannel channel, String[] parsedText){
 
     }
 
