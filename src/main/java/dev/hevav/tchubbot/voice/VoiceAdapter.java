@@ -4,15 +4,19 @@ import com.sedmelluq.discord.lavaplayer.demo.jda.GuildMusicManager;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
+import dev.hevav.tchubbot.Config;
 import dev.hevav.tchubbot.helpers.DatabaseHelper;
 import net.dv8tion.jda.api.audio.AudioReceiveHandler;
 import net.dv8tion.jda.api.audio.AudioSendHandler;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.entities.VoiceChannel;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.managers.AudioManager;
+import org.apache.commons.io.IOUtils;
 
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -67,11 +71,13 @@ public class VoiceAdapter {
     }
     
     public static boolean hasDJ(Member member){
-        String djrole = DatabaseHelper.getCustomString(member.getGuild().getIdLong(), "djrole");
-        if(djrole == null)
-            djrole = "DJ";
-        String finalDjrole = djrole;
-        return member.getRoles().stream().anyMatch(r -> r.getName().equals(finalDjrole));
+        String djrole = DatabaseHelper.getCustomString(member.getGuild().getIdLong(), "djrole", "DJ");
+        return member.getRoles().stream().anyMatch(r -> r.getName().equals(djrole));
+    }
+
+    public static boolean hasVoiceRec(Member member){
+        String recrole = DatabaseHelper.getCustomString(member.getGuild().getIdLong(), "recrole", "REC");
+        return member.getRoles().stream().anyMatch(r -> r.getName().equals(recrole));
     }
 
     public static void joinChannel(VoiceChannel channel, boolean reconnect){
@@ -109,5 +115,21 @@ public class VoiceAdapter {
     public static void returnSendHandler(Guild guild){
         AudioManager manager = guild.getAudioManager();
         manager.setSendingHandler(prevSendHanlers.remove(guild.getIdLong()));
+    }
+
+    public static byte[] fromDiscord(byte[] discordBytes, float v) {
+        try {
+            AudioFormat target = new AudioFormat(v, 16, 1, true, false);
+            AudioInputStream is = AudioSystem.getAudioInputStream(target,
+                    new AudioInputStream(new ByteArrayInputStream(discordBytes), AudioReceiveHandler.OUTPUT_FORMAT, discordBytes.length));
+
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            IOUtils.copy(is, os);
+
+            return os.toByteArray();
+        } catch(Exception e) {
+            Config.logger.warn(e);
+            return new byte[]{};
+        }
     }
 }

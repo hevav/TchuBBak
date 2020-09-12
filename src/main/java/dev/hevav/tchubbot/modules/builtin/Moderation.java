@@ -171,7 +171,7 @@ public class Moderation extends Module {
     }
 
     private static Role getMuteRole(Guild guild){
-        Role role = guild.getRoleById(DatabaseHelper.getCustomString(guild.getIdLong(), "muterole"));
+        Role role = guild.getRoleById(DatabaseHelper.getCustomString(guild.getIdLong(), "muterole", null));
         if(role == null){
             role = guild.createRole().setName("MUTED").complete();
             DatabaseHelper.setCustomString(guild.getIdLong(), "muterole", role.getId());

@@ -8,7 +8,6 @@ import dev.hevav.tchubbot.modules.Module;
 import dev.hevav.tchubbot.types.LocalizedTrigger;
 import dev.hevav.tchubbot.voice.VoiceAdapter;
 import dev.hevav.tchubbot.types.Trigger;
-import dev.hevav.tchubbot.voice.recognition.VoiceRecognition;
 import dev.hevav.tchubbot.voice.recognition.VoiceRecognitionGuildHandler;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
@@ -31,6 +30,7 @@ public class Voice extends Module {
     private boolean recognitionEnabled = false;
     private final HashMap<String, List<LocalizedTrigger>> moduleTriggers = new HashMap<>();
     private final HashMap<String, LocalizedString> modules = new HashMap<>();
+    private final HashMap<Long, VoiceRecognitionGuildHandler> recognizers = new HashMap<>();
 
     public Voice() {
         super("voice",
@@ -63,11 +63,15 @@ public class Voice extends Module {
                 if(!recognitionEnabled){
                     VoiceChannel channel = event.getMember().getVoiceState().getChannel();
                     VoiceAdapter.joinChannel(channel, false);
-                    VoiceAdapter.switchReceiveHandler(new VoiceRecognitionGuildHandler(event.getChannel()), event.getGuild());
+
+                    VoiceRecognitionGuildHandler handler = new VoiceRecognitionGuildHandler(event.getChannel());
+                    VoiceAdapter.switchReceiveHandler(handler, event.getGuild());
+                    recognizers.put(event.getGuild().getIdLong(), handler);
+
                     channel.getMembers().forEach(member -> {
                         User user = member.getUser();
-                        if(!user.isBot())
-                            VoiceRecognition.createUserVoiceRecognition(user, event.getGuild());
+                        if(VoiceAdapter.hasVoiceRec(member) && !user.isBot())
+                            recognizers.get(event.getGuild().getIdLong()).createUserVoiceRecognition(user);
                     });
                     recognitionEnabled = true;
                 }
@@ -78,8 +82,8 @@ public class Voice extends Module {
                     VoiceAdapter.returnReceiveHandler(event.getGuild());
                     channel.getMembers().forEach(member -> {
                         User user = member.getUser();
-                        if(VoiceAdapter.hasDJ(member) && !user.isBot())
-                            VoiceRecognition.closeUserVoiceRecognition(user);
+                        if(VoiceAdapter.hasVoiceRec(member) && !user.isBot())
+                            recognizers.get(event.getGuild().getIdLong()).closeUserVoiceRecognition(user);
                     });
                     recognitionEnabled = false;
                 }
@@ -94,8 +98,8 @@ public class Voice extends Module {
                         moduleList.add(new MessageEmbed.Field(String.format("%s%s %s", Config.bot_prefix, parsedText[0], shortName), Translator.translateString(description, event.getGuild()), false));
                         if (fieldCount.get() == 25) {
                             fieldCount.set(0);
-                            moduleList.clear();
                             EmbedHelper.sendEmbed(Translator.translateString(voiceHelpDescription, event.getGuild()), "", event.getChannel(), moduleList);
+                            moduleList.clear();
                         }
                     });
                     EmbedHelper.sendEmbed(Translator.translateString(voiceHelpDescription, event.getGuild()), "", event.getChannel(), moduleList);
@@ -136,15 +140,15 @@ public class Voice extends Module {
             User user = event.getMember().getUser();
             if(user.getIdLong() == Config.api.getSelfUser().getIdLong())
                 VoiceAdapter.leaveChannel(event.getGuild());
-            else if(recognitionEnabled && VoiceAdapter.hasDJ(event.getMember()) && !user.isBot())
-                VoiceRecognition.closeUserVoiceRecognition(user);
+            else if(recognitionEnabled && VoiceAdapter.hasVoiceRec(event.getMember()) && !user.isBot())
+                recognizers.get(event.getGuild().getIdLong()).closeUserVoiceRecognition(user);
         }
 
         @Override
         public void onGuildVoiceJoin(@NotNull GuildVoiceJoinEvent event) {
             User user = event.getMember().getUser();
-            if(recognitionEnabled && VoiceAdapter.hasDJ(event.getMember()) && !user.isBot())
-                VoiceRecognition.createUserVoiceRecognition(user, event.getGuild());
+            if(recognitionEnabled && VoiceAdapter.hasVoiceRec(event.getMember()) && !user.isBot())
+                recognizers.get(event.getGuild().getIdLong()).createUserVoiceRecognition(user);
         }
     } 
 }

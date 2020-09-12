@@ -31,6 +31,7 @@ public class Config {
     public static String log_level;
     public static String db_string;
     public static String tts_voice_dir;
+    public static String vosk_api;
     public static JDA api;
 
     public static Logger logger;
@@ -43,6 +44,7 @@ public class Config {
         log_level = System.getenv("pf_log_level");
         db_string = System.getenv("pf_db_string");
         tts_voice_dir = System.getenv("pf_tts_voice_dir");
+        vosk_api = System.getenv("pf_vosk_api");
         for(String arg : args){
             String[] arg_split = arg.split("=");
             switch(arg_split[0]){
@@ -63,6 +65,9 @@ public class Config {
                     break;
                 case "tts_voice_dir":
                     tts_voice_dir = arg_split[1];
+                    break;
+                case "vosk_api":
+                    vosk_api = arg_split[1];
                     break;
                 default:
                     logger.warn(String.format("Wrong variable %s", arg_split[0]));

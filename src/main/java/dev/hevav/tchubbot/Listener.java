@@ -1,8 +1,11 @@
 package dev.hevav.tchubbot;
 
 import dev.hevav.tchubbot.helpers.DatabaseHelper;
+import dev.hevav.tchubbot.i18n.Translator;
 import dev.hevav.tchubbot.modules.Module;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.GuildChannel;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
@@ -13,6 +16,8 @@ import org.apache.logging.log4j.Logger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static dev.hevav.tchubbot.i18n.strings.VoiceStrings.rec_start;
 
 /**
  * Loads modules by trigger
@@ -66,5 +71,28 @@ public class Listener extends ListenerAdapter{
     @Override
     public void onGuildLeave(GuildLeaveEvent event){
         DatabaseHelper.removeGuild(event.getGuild().getIdLong());
+    }
+
+    public static void doRecognizeWork(String[] received, Guild guild, GuildChannel channel, User user){
+        if (received != null && received.length > 1) {
+
+            int receivedInd = 0;
+            String tr_rec_start = Translator.translateString(rec_start, guild);
+            while(receivedInd < received.length-1){
+                if(received[receivedInd].equals(tr_rec_start))
+                    break;
+                ++receivedInd;
+            }
+            if(received[receivedInd].equals(tr_rec_start)){
+                String[] receivedFinal = Arrays.copyOfRange(received, receivedInd + 1, received.length);
+                for (String oneWord : receivedFinal)
+                    Config.logger.trace(oneWord);
+                for (Module module : Config.modules) {
+                    if (module.audioTriggers.size() > 0 && module.audioTriggers.stream().anyMatch(s -> receivedFinal[0].contains(Translator.translateString(s.trigger, guild)))) {
+                        module.onVoice(guild.getMember(user), channel, receivedFinal);
+                    }
+                }
+            }
+        }
     }
 }

@@ -297,23 +297,29 @@ public class Music extends Module {
     }
 
     public void onVoice(Member event, GuildChannel channel, String[] parsedText) {
-        if(!VoiceAdapter.hasDJ(event))
-            return;
         switch (parsedText[0]){
             case "пропусти":
+                if(!VoiceAdapter.hasDJ(event))
+                    return;
                 skipTrack(event.getGuild());
                 break;
             case "включи":
                 youtubeSearch(String.join(" ", Arrays.copyOfRange(parsedText, 1, parsedText.length)), (TextChannel) channel, VoiceAdapter.getChannel(event.getGuild().getIdLong(), event.getVoiceState().getChannel(), false));
                 break;
             case "останови":
+                if(!VoiceAdapter.hasDJ(event))
+                    return;
                 stop(event.getGuild());
                 break;
             case "тише":
-                setVolume(event.getGuild(), getVolume(event.getGuild()) - 10);
+                if(!VoiceAdapter.hasDJ(event))
+                    return;
+                setVolume(event.getGuild(), getVolume(event.getGuild()) - 25);
                 break;
             case "громче":
-                setVolume(event.getGuild(), getVolume(event.getGuild()) + 10);
+                if(!VoiceAdapter.hasDJ(event))
+                    return;
+                setVolume(event.getGuild(), getVolume(event.getGuild()) + 25);
                 break;
         }
     }
@@ -323,7 +329,7 @@ public class Music extends Module {
         public void onMessageReactionAdd(MessageReactionAddEvent event){
             if(Objects.requireNonNull(event.getUser()).isBot())
                 return;
-            if(VoiceAdapter.hasDJ(event.getMember()))
+            if(!VoiceAdapter.hasDJ(event.getMember()))
                 return;
             switch (event.getReactionEmote().getEmoji()){
                 case "⏯":
@@ -336,10 +342,10 @@ public class Music extends Module {
                     setVolume(event.getGuild(), 0);
                     break;
                 case "\uD83D\uDD09":
-                    setVolume(event.getGuild(), getVolume(event.getGuild()) - 10);
+                    setVolume(event.getGuild(), getVolume(event.getGuild()) - 25);
                     break;
                 case "\uD83D\uDD0A":
-                    setVolume(event.getGuild(), getVolume(event.getGuild()) + 10);
+                    setVolume(event.getGuild(), getVolume(event.getGuild()) + 25);
                     break;
                 default:
                     return;

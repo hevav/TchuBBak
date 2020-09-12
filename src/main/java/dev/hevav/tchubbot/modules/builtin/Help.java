@@ -55,8 +55,8 @@ public class Help extends Module {
                         moduleList.add(new MessageEmbed.Field(String.format("%s%s %s", Config.bot_prefix, parsedText[0], shortName), Translator.translateString(description, event.getGuild()), false));
                         if (fieldCount.get() == 25) {
                             fieldCount.set(0);
-                            moduleList.clear();
                             EmbedHelper.sendEmbed(Translator.translateString(helpDescription, event.getGuild()), "", event.getChannel(), moduleList);
+                            moduleList.clear();
                         }
                     });
                     EmbedHelper.sendEmbed(Translator.translateString(helpDescription, event.getGuild()), "", event.getChannel(), moduleList);

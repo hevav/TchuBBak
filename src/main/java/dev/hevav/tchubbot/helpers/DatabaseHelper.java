@@ -63,8 +63,11 @@ public class DatabaseHelper {
      * @param guildId Discord Guild id*
      * @return Custom field as String
      */
-    public static String getCustomString(Long guildId, String fieldName){
-        return (String)database.getCollection("guilds").find(new Document().append("guildId", guildId)).first().get(fieldName);
+    public static String getCustomString(Long guildId, String fieldName, String defaultValue){
+        Object answer = database.getCollection("guilds").find(new Document().append("guildId", guildId)).first().get(fieldName);
+        if(answer == null)
+            return defaultValue;
+        return answer.toString();
     }
 
     /**
