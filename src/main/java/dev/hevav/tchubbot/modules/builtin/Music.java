@@ -74,7 +74,7 @@ public class Music extends Module {
     public void onTick() {
         getGuildAudioPlayers().forEach((GuildMusicManager musicManager)->{
             AudioManager manager = musicManager.scheduler.textChannel.getGuild().getAudioManager();
-            if(manager.isConnected() && manager.getConnectedChannel().getMembers().size() == 1){
+            if(manager.isConnected() && manager.getConnectedChannel().getMembers().size() == 0){
                 manager.closeAudioConnection();
             }
         });

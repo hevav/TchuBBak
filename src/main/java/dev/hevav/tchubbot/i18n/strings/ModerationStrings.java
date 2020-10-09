@@ -32,6 +32,14 @@ public class ModerationStrings {
             null,
             null
     );
+    public static LocalizedString infrDescription = new LocalizedString(
+            "Посмотреть нарушения <member>",
+            "View <member>'s infractions",
+            null,
+            null,
+            null,
+            null
+    );
     public static LocalizedString banDescription = new LocalizedString(
             "Забанить <member> по причине [message] на время [time]",
             "Ban <member> with message [message] for time [time]",

@@ -1,5 +1,6 @@
 package dev.hevav.tchubbot;
 
+import dev.hevav.tchubbot.i18n.LocalizedString;
 import dev.hevav.tchubbot.modules.Module;
 import dev.hevav.tchubbot.modules.builtin.*;
 import net.dv8tion.jda.api.JDA;
@@ -31,7 +32,7 @@ public class Config {
     public static String log_level;
     public static String db_string;
     public static String tts_voice_dir;
-    public static String vosk_api;
+    public static LocalizedString vosk_api = new LocalizedString();
     public static JDA api;
 
     public static Logger logger;
@@ -44,7 +45,14 @@ public class Config {
         log_level = System.getenv("pf_log_level");
         db_string = System.getenv("pf_db_string");
         tts_voice_dir = System.getenv("pf_tts_voice_dir");
-        vosk_api = System.getenv("pf_vosk_api");
+
+        vosk_api.russianString = System.getenv("pf_vosk_ru");
+        vosk_api.englishString = System.getenv("pf_vosk_en");
+        vosk_api.brazilianString = System.getenv("pf_vosk_br");
+        vosk_api.indianString = System.getenv("pf_vosk_in");
+        vosk_api.japaneseString = System.getenv("pf_vosk_jp");
+        vosk_api.chineseString = System.getenv("pf_vosk_ch");
+
         for(String arg : args){
             String[] arg_split = arg.split("=");
             switch(arg_split[0]){
@@ -66,8 +74,23 @@ public class Config {
                 case "tts_voice_dir":
                     tts_voice_dir = arg_split[1];
                     break;
-                case "vosk_api":
-                    vosk_api = arg_split[1];
+                case "vosk_ru":
+                    vosk_api.russianString = arg_split[1];
+                    break;
+                case "vosk_en":
+                    vosk_api.englishString = arg_split[1];
+                    break;
+                case "vosk_br":
+                    vosk_api.brazilianString = arg_split[1];
+                    break;
+                case "vosk_in":
+                    vosk_api.indianString = arg_split[1];
+                    break;
+                case "vosk_jp":
+                    vosk_api.japaneseString = arg_split[1];
+                    break;
+                case "vosk_ch":
+                    vosk_api.chineseString = arg_split[1];
                     break;
                 default:
                     logger.warn(String.format("Wrong variable %s", arg_split[0]));

@@ -11,8 +11,12 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 import static dev.hevav.tchubbot.i18n.strings.ModerationStrings.*;
@@ -24,6 +28,8 @@ import static dev.hevav.tchubbot.i18n.strings.ModerationStrings.*;
  * @since 1.0
  */
 public class Moderation extends Module {
+    private final DateTimeFormatter formatter =
+            DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy O");
 
     public Moderation() {
         super(
@@ -31,18 +37,19 @@ public class Moderation extends Module {
             moderationDescription,
             Arrays.asList(
                 new Trigger("purge", "purge <int>", purgeDescription),
+                new Trigger("infr", "infr <member>", infrDescription),
                 new Trigger("ban", "ban <member> [time] [message]", banDescription),
                 new Trigger("mute", "mute <member> [time] [message]", muteDescription),
                 new Trigger("warn", "warn <member> [message]", warnDescription),
-                new Trigger("unmute", "unmute <member> [time] [message]", unmuteDescription),
-                new Trigger("kick", "kick <member> [time] [message]", kickDescription)),
+                new Trigger("unmute", "unmute <member> [message]", unmuteDescription),
+                new Trigger("kick", "kick <member> [message]", kickDescription)),
             new ArrayList<>());
     }
 
     @Override
     public void onTick() {
         DatabaseHelper.getInfractions().forEach(infraction->{
-            if(infraction.lastDate <= System.currentTimeMillis()){
+            if(Long.parseLong(infraction.lastDate) <= System.currentTimeMillis()){
                 DatabaseHelper.removeInfraction(infraction);
 
                 switch (infraction.type){
@@ -88,6 +95,19 @@ public class Moderation extends Module {
                             event.getChannel());
                 }
                 return;
+            case "infr":
+                Member member = event.getMessage().getMentionedMembers().get(0);
+                List<MessageEmbed.Field> fields = new ArrayList<>();
+                for (Infraction infraction : DatabaseHelper.getInfractions(event.getGuild().getId(), member.getId())){
+                    String reason = infraction.reason;
+                    Long lastDate = Long.parseLong(infraction.lastDate);
+                    if (lastDate != Long.MAX_VALUE){
+                        reason += "\n" + Instant.ofEpochMilli(lastDate).atZone(ZoneId.systemDefault()).format(formatter);
+                    }
+                    fields.add(new MessageEmbed.Field(infraction.type.toString(), reason, false));
+                }
+                EmbedHelper.sendEmbed(Translator.translateString(moderationDescription, event.getGuild()), "", event.getChannel(), fields);
+                return;
         }
         Member member = event.getMessage().getMentionedMembers().get(0);
         String nickname = member.getUser().getName();
@@ -99,10 +119,11 @@ public class Moderation extends Module {
             reason = String.join(" ", Arrays.copyOfRange(parsedText, 2, parsedText.length));
         else if(parsedText.length > 3)
             reason = String.join(" ", Arrays.copyOfRange(parsedText, 3, parsedText.length));
-        long lastDate = Long.MAX_VALUE;
+        long lastDateLong = Long.MAX_VALUE;
         if(time != null){
-            lastDate = System.currentTimeMillis() + lastDate;
+            lastDateLong = System.currentTimeMillis() + time;
         }
+        String lastDate = String.valueOf(lastDateLong);
         try {
             switch (parsedText[0]){
                 case "ban":
@@ -113,7 +134,7 @@ public class Moderation extends Module {
                         return;
                     }
                     event.getGuild().ban(member, 0).reason(reason).complete();
-                    DatabaseHelper.addInfraction(new Infraction(Infraction.InfractionType.BAN, reason, lastDate, event.getGuild().getIdLong(), member.getIdLong()));
+                    DatabaseHelper.addInfraction(new Infraction(Infraction.InfractionType.BAN, reason, lastDate, event.getGuild().getId(), member.getId()));
                     break;
                 case "kick":
                     if (!Objects.requireNonNull(event.getMember()).hasPermission(Permission.KICK_MEMBERS)){
@@ -123,7 +144,7 @@ public class Moderation extends Module {
                         return;
                     }
                     event.getGuild().kick(member).reason(reason).complete();
-                    DatabaseHelper.addInfraction(new Infraction(Infraction.InfractionType.KICK, reason, lastDate, event.getGuild().getIdLong(), member.getIdLong()));
+                    DatabaseHelper.addInfraction(new Infraction(Infraction.InfractionType.KICK, reason, lastDate, event.getGuild().getId(), member.getId()));
                     break;
                 case "mute":
                     if (!Objects.requireNonNull(event.getMember()).hasPermission(Permission.MANAGE_CHANNEL)){
@@ -133,7 +154,7 @@ public class Moderation extends Module {
                         return;
                     }
                     event.getGuild().addRoleToMember(member, getMuteRole(event.getGuild())).complete();
-                    DatabaseHelper.addInfraction(new Infraction(Infraction.InfractionType.MUTE, reason, lastDate, event.getGuild().getIdLong(), member.getIdLong()));
+                    DatabaseHelper.addInfraction(new Infraction(Infraction.InfractionType.MUTE, reason, lastDate, event.getGuild().getId(), member.getId()));
                     break;
                 case "warn":
                     if (!Objects.requireNonNull(event.getMember()).hasPermission(Permission.MANAGE_CHANNEL)){
@@ -142,7 +163,7 @@ public class Moderation extends Module {
                                 event.getChannel());
                         return;
                     }
-                    DatabaseHelper.addInfraction(new Infraction(Infraction.InfractionType.WARN, reason, lastDate, event.getGuild().getIdLong(), member.getIdLong()));
+                    DatabaseHelper.addInfraction(new Infraction(Infraction.InfractionType.WARN, reason, lastDate, event.getGuild().getId(), member.getId()));
                     break;
                 case "unmute":
                     if (!Objects.requireNonNull(event.getMember()).hasPermission(Permission.MANAGE_CHANNEL)){
@@ -171,18 +192,18 @@ public class Moderation extends Module {
     }
 
     private static Role getMuteRole(Guild guild){
-        Role role = guild.getRoleById(DatabaseHelper.getCustomString(guild.getIdLong(), "muterole", null));
-        if(role == null){
-            role = guild.createRole().setName("MUTED").complete();
-            DatabaseHelper.setCustomString(guild.getIdLong(), "muterole", role.getId());
+        String roleId = DatabaseHelper.getCustomString(guild.getIdLong(), "muterole", null);
+        if(roleId == null){
+            roleId = guild.createRole().setName("MUTED").complete().getId();
+            DatabaseHelper.setCustomString(guild.getIdLong(), "muterole", roleId);
         }
-        return role;
+        return guild.getRoleById(roleId);
     }
 
     private static Long millisFromString(String string){
         try {
             long num = Long.parseLong(string.replaceAll("[^0-9]+", ""));
-            String typeOfNum = string.replaceAll("^\\\\d+\\\\.", "");
+            String typeOfNum = string.substring((int) Math.log10(num) + 1);
             num*=1000;
             switch (typeOfNum){
                 case "y":

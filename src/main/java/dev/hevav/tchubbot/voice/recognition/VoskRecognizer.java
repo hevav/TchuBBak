@@ -5,6 +5,7 @@ import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketAdapter;
 import com.neovisionaries.ws.client.WebSocketFactory;
 import dev.hevav.tchubbot.Config;
+import dev.hevav.tchubbot.i18n.Translator;
 import dev.hevav.tchubbot.voice.VoiceAdapter;
 import dev.hevav.tchubbot.voice.WAVHeader;
 import net.dv8tion.jda.api.entities.GuildChannel;
@@ -26,7 +27,7 @@ public class VoskRecognizer extends Recognizer {
     @Override
     public String[] recognise() {
         try {
-            WebSocket webSocket = factory.createSocket(Config.vosk_api);
+            WebSocket webSocket = factory.createSocket(Translator.translateString(Config.vosk_api, channel.getGuild()));
 
             webSocket.addListener(new WebSocketAdapter() {
                 @Override

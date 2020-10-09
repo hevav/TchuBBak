@@ -32,4 +32,8 @@ public class LocalizedString {
         japaneseString = _japaneseString;
         chineseString = _chineseString;
     }
+
+    public LocalizedString (){
+
+    }
 }

@@ -78,10 +78,8 @@ public class DatabaseHelper {
      * @param fieldValue Custom field value
      */
     public static void setCustomString(Long guildId, String fieldName, String fieldValue){
-        Document object = database.getCollection("guilds").find(new Document().append("guildId", guildId)).first();
-        object.remove(fieldName);
-        object.put(fieldName, fieldValue);
-        database.getCollection("guilds").findOneAndUpdate(new Document().append("guildId", guildId), object);
+        Document object = new Document().append(fieldName, fieldValue);
+        database.getCollection("guilds").findOneAndUpdate(new Document().append("guildId", guildId), new Document().append("$set", object));
     }
 
     public static void addGuild(Long guildId){
@@ -96,9 +94,12 @@ public class DatabaseHelper {
         return database.getCollection("guilds").countDocuments(new Document().append("guildId", guildId)) > 0;
     }
 
-    public static List<Infraction> getInfractions(Long guildId){
+    public static List<Infraction> getInfractions(String guildId, String userId){
         List<Infraction> infractions = new ArrayList<>();
-        database.getCollection("infractions").find(new Document().append("guildId", guildId)).forEach((Consumer<Document>) document -> {
+        database.getCollection("infractions").find(
+                new Document()
+                        .append("guildId", guildId)
+                        .append("userId", userId)).forEach((Consumer<Document>) document -> {
              infractions.add(gson.fromJson(document.toJson(), Infraction.class));
         });
         return infractions;

@@ -10,11 +10,11 @@ public class Infraction {
 
     public InfractionType type;
     public String reason;
-    public long lastDate;
-    public long guildId;
-    public long userId;
+    public String lastDate;
+    public String guildId;
+    public String userId;
 
-    public Infraction(InfractionType type, String reason, long lastDate, long guildId, long userId){
+    public Infraction(InfractionType type, String reason, String lastDate, String guildId, String userId){
         this.type = type;
         this.reason = reason;
         this.lastDate = lastDate;
