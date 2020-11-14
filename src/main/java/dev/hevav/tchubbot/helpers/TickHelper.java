@@ -14,9 +14,11 @@ public class TickHelper {
     public TickHelper(Module[] modules){
         tickThread = new Thread(()->{
             try {
-                for(Module module : modules)
-                    module.onTick();
-                Thread.sleep(60000);
+                while (true){
+                    for(Module module : modules)
+                        module.onTick();
+                    Thread.sleep(60000);
+                }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

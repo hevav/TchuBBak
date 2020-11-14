@@ -32,7 +32,8 @@ public class VoiceRecognitionGuildHandler implements AudioReceiveHandler {
     @Override
     public void handleUserAudio(@NotNull UserAudio audio){
         User user = audio.getUser();
-        recognizerHashMap.get(user.getIdLong()).addBuffer(audio.getAudioData(1.0));
+        if (!user.isBot())
+            recognizerHashMap.get(user.getIdLong()).addBuffer(audio.getAudioData(1.0));
     }
 
     public void createUserVoiceRecognition(User user) {

@@ -18,7 +18,6 @@ import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.managers.AudioManager;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.jsoup.Jsoup;
@@ -68,16 +67,6 @@ public class Music extends Module {
     public void onInit(){
         Config.api.addEventListener(new MusicListener());
         Config.logger.debug("Module Music was initialized");
-    }
-
-    @Override
-    public void onTick() {
-        getGuildAudioPlayers().forEach((GuildMusicManager musicManager)->{
-            AudioManager manager = musicManager.scheduler.textChannel.getGuild().getAudioManager();
-            if(manager.isConnected() && manager.getConnectedChannel().getMembers().size() == 0){
-                manager.closeAudioConnection();
-            }
-        });
     }
 
     private void loadAndPlay(final TextChannel channel, final String trackUrl, final VoiceChannel voiceChannel) {

@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static dev.hevav.tchubbot.i18n.strings.VoiceStrings.*;
 
 public class Voice extends Module {
-    private boolean recognitionEnabled = false;
+    private HashMap<Long, Boolean> recognitionEnabled = new HashMap<>();
     private final HashMap<String, List<LocalizedTrigger>> moduleTriggers = new HashMap<>();
     private final HashMap<String, LocalizedString> modules = new HashMap<>();
     private final HashMap<Long, VoiceRecognitionGuildHandler> recognizers = new HashMap<>();
@@ -60,7 +60,9 @@ public class Voice extends Module {
                     event.getGuild().getAudioManager().closeAudioConnection();
                 break;
             case "sr":
-                if(!recognitionEnabled){
+                if (!recognitionEnabled.containsKey(event.getGuild().getIdLong()))
+                    recognitionEnabled.put(event.getGuild().getIdLong(), false);
+                if (!recognitionEnabled.get(event.getGuild().getIdLong())){
                     VoiceChannel channel = event.getMember().getVoiceState().getChannel();
                     VoiceAdapter.joinChannel(channel, false);
 
@@ -73,11 +75,11 @@ public class Voice extends Module {
                         if(VoiceAdapter.hasVoiceRec(member) && !user.isBot())
                             recognizers.get(event.getGuild().getIdLong()).createUserVoiceRecognition(user);
                     });
-                    recognitionEnabled = true;
+                    recognitionEnabled.replace(event.getGuild().getIdLong(), true);
                 }
                 break;
             case "stopr":
-                if(recognitionEnabled){
+                if(recognitionEnabled.get(event.getGuild().getIdLong())){
                     VoiceChannel channel = event.getMember().getVoiceState().getChannel();
                     VoiceAdapter.returnReceiveHandler(event.getGuild());
                     channel.getMembers().forEach(member -> {
@@ -85,7 +87,7 @@ public class Voice extends Module {
                         if(VoiceAdapter.hasVoiceRec(member) && !user.isBot())
                             recognizers.get(event.getGuild().getIdLong()).closeUserVoiceRecognition(user);
                     });
-                    recognitionEnabled = false;
+                    recognitionEnabled.replace(event.getGuild().getIdLong(), false);
                 }
                 break;
             case "vh":
@@ -123,6 +125,15 @@ public class Voice extends Module {
     }
 
     @Override
+    public void onTick() {
+        VoiceAdapter.voiceChannels.forEach((Long id, VoiceChannel voiceChannel)->{
+            if(voiceChannel.getMembers().size() == 1){
+                voiceChannel.getGuild().getAudioManager().closeAudioConnection();
+            }
+        });
+    }
+
+    @Override
     public void onInit() {
         VoiceAdapter.initAdapter();
         Config.api.addEventListener(new VoiceListener());
@@ -140,14 +151,14 @@ public class Voice extends Module {
             User user = event.getMember().getUser();
             if(user.getIdLong() == Config.api.getSelfUser().getIdLong())
                 VoiceAdapter.leaveChannel(event.getGuild());
-            else if(recognitionEnabled && VoiceAdapter.hasVoiceRec(event.getMember()) && !user.isBot())
+            else if(recognitionEnabled.containsKey(event.getGuild().getIdLong()) && recognitionEnabled.get(event.getGuild().getIdLong()) && VoiceAdapter.hasVoiceRec(event.getMember()) && !user.isBot())
                 recognizers.get(event.getGuild().getIdLong()).closeUserVoiceRecognition(user);
         }
 
         @Override
         public void onGuildVoiceJoin(@NotNull GuildVoiceJoinEvent event) {
             User user = event.getMember().getUser();
-            if(recognitionEnabled && VoiceAdapter.hasVoiceRec(event.getMember()) && !user.isBot())
+            if(recognitionEnabled.containsKey(event.getGuild().getIdLong()) && recognitionEnabled.get(event.getGuild().getIdLong()) && VoiceAdapter.hasVoiceRec(event.getMember()) && !user.isBot())
                 recognizers.get(event.getGuild().getIdLong()).createUserVoiceRecognition(user);
         }
     } 
